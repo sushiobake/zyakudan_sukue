@@ -13,7 +13,6 @@ import {
   backgroundPath,
   resolveQuestionBackground,
 } from '../data/backgrounds'
-import { ADMIN_ENABLED } from '../config/features'
 import DifficultyMeter from '../components/DifficultyMeter'
 import { resolveSiteUrl } from '../utils/siteUrl'
 import { loadLevels } from '../data/loadLevels'
@@ -396,7 +395,7 @@ export default function GameApp() {
                 <span>STUDIO</span>
               </span>
             </a>
-            {ADMIN_ENABLED ? (
+            {import.meta.env.DEV ? (
               <a className="tps-admin" href="#/admin">
                 管理 / ADMIN
               </a>

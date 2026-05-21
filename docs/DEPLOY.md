@@ -11,7 +11,7 @@
 | `SUPABASE_EVENTS_TABLE` | `zyakudan_events` | 省略可（デフォルトこの名前） |
 | `ZYAKUDAN_ADMIN_PASSWORD` | 自分で決めた長いパスワード | 管理画面「プレイ履歴」取得用 |
 | `VITE_SITE_URL` | `https://あなたの.vercel.app` | OGP・X共有の絶対URL（末尾スラッシュなし） |
-| `VITE_ENABLE_ADMIN` | `true` | 本番で `/#/admin` を有効にする |
+| `VITE_ENABLE_ADMIN` | `true` | 本番で `/#/admin` を有効にする（タイトルにリンクは出ない。URL直打ち） |
 
 **注意:** `SUPABASE_SERVICE_ROLE_KEY` は GitHub に上げない。`VITE_` 付きだけがフロントに埋め込まれる。
 
