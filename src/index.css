@@ -1,0 +1,76 @@
+:root {
+  color-scheme: light;
+  /* ギャルゲでよくある「クリームUI + 茶インク + スモークピンクアクセント」 */
+  --vn-ink: #3d342c;
+  --vn-ink-muted: rgba(61, 52, 44, 0.72);
+  --vn-ink-faint: rgba(61, 52, 44, 0.52);
+  --vn-panel: #fffdf9;
+  --vn-panel2: #fdf6ee;
+  --vn-panel-edge: #e7dfd6;
+  --vn-brown-frame: #a68462;
+  --vn-brown-deep: #6f563f;
+  --vn-accent-rose: #e8789a;
+  --vn-accent-rose-soft: #f4c4d4;
+  --vn-accent-champagne: #f3e3cc;
+  --vn-font-serif: 'Noto Serif JP', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
+  --vn-font-ui: 'Zen Kaku Gothic New', 'Yu Gothic UI', sans-serif;
+  --vn-font-display: 'Shippori Mincho B1', 'Noto Serif JP', serif;
+  --vn-font-mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* ADV / クイズ HUD（Design System） */
+  --vn-adv-body: rgba(36, 28, 52, 0.92);
+  --vn-adv-body-fade: rgba(36, 28, 52, 0.45);
+  --vn-adv-name: rgba(72, 48, 96, 0.92);
+  --vn-grad-adv-window: linear-gradient(
+    105deg,
+    rgba(36, 28, 52, 0.94) 0%,
+    rgba(36, 28, 52, 0.92) 50%,
+    rgba(36, 28, 52, 0.86) 78%,
+    rgba(36, 28, 52, 0.62) 92%,
+    rgba(36, 28, 52, 0.28) 100%
+  );
+  --vn-grad-paper: linear-gradient(
+    165deg,
+    rgba(255, 253, 249, 0.96),
+    rgba(254, 245, 236, 0.94)
+  );
+  --vn-grad-rose: linear-gradient(90deg, #e8789a, #f5b0c4);
+  --vn-grad-rose-soft: linear-gradient(90deg, #f06292, #f8b8cc);
+  --vn-shadow-card: 0 8px 24px rgba(90, 72, 58, 0.06);
+  --vn-shadow-adv: 0 8px 28px rgba(0, 0, 0, 0.28);
+  --vn-shadow-rose: 0 14px 34px rgba(232, 120, 154, 0.28);
+
+  /* 後方互換（App.css 内の参照） */
+  --vn-text: var(--vn-ink);
+  --vn-gold: var(--vn-brown-frame);
+  --vn-pink: var(--vn-accent-rose);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #efe8df;
+}
+
+body {
+  font-family: var(--vn-font-ui);
+  font-weight: 500;
+  color: var(--vn-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100dvh;
+  width: 100%;
+}
+
+button {
+  font-family: inherit;
+}

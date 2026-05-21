@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  
+  <rect width="48" height="48" rx="9" fill="#fffdf9"></rect>
+  
+  <rect x="3.5" y="3.5" width="41" height="41" rx="6" fill="none" stroke="#e8789a" stroke-width="1.6"></rect>
+  
+  <text x="24" y="33.5" text-anchor="middle" font-family="&#39;Shippori Mincho B1&#39;,&#39;Noto Serif JP&#39;,&#39;Yu Mincho&#39;,serif" font-weight="800" font-size="28" fill="#3d342c">寿</text>
+</svg>

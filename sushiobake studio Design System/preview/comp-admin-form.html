@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body{padding:24px;background:var(--page-warm)}
+  .card{background:#fffdf9;border:1px solid #e7dfd6;border-radius:8px;padding:18px 20px;box-shadow:0 8px 24px rgba(90,72,58,.06)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{display:flex;flex-direction:column;gap:6px;font-size:12px;color:rgba(61,52,44,.7);font-family:'Zen Kaku Gothic New',sans-serif}
+  .full{grid-column:1/-1}
+  input,select,textarea{padding:8px 10px;border:1px solid #d4c8bc;border-radius:4px;font-family:inherit;font-size:13px;color:#3d342c;background:#fff}
+  textarea{resize:vertical;line-height:1.55;font-family:'Zen Kaku Gothic New',sans-serif}
+  h2{margin:0 0 14px;font-family:'Shippori Mincho B1',serif;font-size:16px;color:#3d342c}
+</style></head>
+<body><div class="card">
+  <h2>章の設定</h2>
+  <div class="grid">
+    <label class="field"><span>タイトル</span><input value="第1章：まずは呼吸を整えよう"></label>
+    <label class="field"><span>アクセント色</span><input type="color" value="#e8789a" style="height:34px;padding:2px"></label>
+    <label class="field full"><span>シチュエーション</span><textarea rows="2">マッチングアプリで初回メッセージを送る直前。彼は「差別化のために長文で自己紹介しよう」としている。</textarea></label>
+  </div>
+</div></body></html>

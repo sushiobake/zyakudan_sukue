@@ -1,0 +1,115 @@
+/* Minimal sample data extracted from public/content.json — 3 chapters x 3 questions */
+window.SAMPLE_LEVELS = [
+  {
+    id: "lv1",
+    title: "第1章：まずは呼吸を整えよう",
+    tagline: "清潔感・距離感の入門。目の前の彼を、穏やかに救う。",
+    accent: "#ff7eb3",
+    questions: [
+      {
+        situation: "マッチングアプリで初回メッセージを送る直前。彼は「差別化のために長文で自己紹介しよう」としている。",
+        options: [
+          { text: "趣味と仕事と週末の過ごし方を、箇条書きで短く", score: 100, reaction: "……読みやすい。続きが気になる。", afterScoreLine: "相手の負担を減らせている。ここから会話が始まりやすい。" },
+          { text: "自己開示MAXの長文（努力と苦労の全履歴）",       score:  20, reaction: "（既読がつかない）",             afterScoreLine: "初手で重い。相手は「返す労力」を感じてしまう。" },
+          { text: "「はじめまして」だけ送って終わり",                 score:  60, reaction: "……はじめまして。",            afterScoreLine: "安全だが、会話のフックが弱い。一文だけでも具体があると良い。" },
+          { text: "「可愛いですね」連打で勢いを見せる",               score:  80, reaction: "えっ……ありがとう？",         afterScoreLine: "悪くはないが、相手によっては警戒される。文脈が欲しい。" },
+        ],
+      },
+      {
+        situation: "初デート前日。彼は「格好つけたいから香水をたっぷり」と考えている。",
+        options: [
+          { text: "シャワーと歯磨きで整え、香水は控えめ or 無し", score: 100, reaction: "（近づいても）匂いが気にならない。", afterScoreLine: "清潔の基本は「無臭に近い」。香りは背景に徹するのが強い。" },
+          { text: "強めの香水を首筋に重点スプレー",               score:  20, reaction: "……ちょっと、目が痛い。",       afterScoreLine: "香りは武器ではなく補助。強すぎると相手の注意を奪う。" },
+          { text: "整髪料だけで勝負（髪はバチバチ）",             score:  60, reaction: "髪、光ってるね……",            afterScoreLine: "清潔感は「匂い」だけじゃない。光沢も距離になる。" },
+          { text: "家では裸足で過ごして靴下を新調しない",         score:  80, reaction: "（笑顔だが足元は見ていない）",  afterScoreLine: "細部が出る場面で減点されやすい。最低限の新品感は効く。" },
+        ],
+      },
+      {
+        situation: "会計のタイミング。彼は「男らしさ」を示したいらしい。",
+        options: [
+          { text: "先に「今日はこちらで」と軽く言い、相手の反応を見る", score: 100, reaction: "……ありがとう。次は私がね。", afterScoreLine: "相手の自立も尊重できる。空気を壊さずに格好もつく。" },
+          { text: "黙って全額を支払い、レシートを握りしめて見せる",     score:  20, reaction: "（空気が固まる）",           afterScoreLine: "善意でも、支配に見える瞬間がある。相手の意思確認が先。" },
+          { text: "割り勘を提案して公平さをアピール",                   score:  80, reaction: "うん、それがいいかも。",     afterScoreLine: "状況次第では正解。ただし「空気」より先に数字を出しすぎない。" },
+          { text: "財布を出すフリだけして相手に止めてもらう",           score:  60, reaction: "……（止め方が難しい）",     afterScoreLine: "テクニックに見えると信用を落とす。誠実さの方が強い。" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "lv2",
+    title: "第2章：街コン帰りの気まずさ",
+    tagline: "店選び・誘い方・空気読み。ちょい本気の現場。",
+    accent: "#9adbc9",
+    questions: [
+      {
+        situation: "店選び。彼は「高い店＝誠意」と信じている。",
+        options: [
+          { text: "相手の好みと移動距離を聞いてから候補を2つ出す",     score: 100, reaction: "どっちも好き。ありがとう。", afterScoreLine: "選択肢を渡すのは、相手への尊重と会話の材料になる。" },
+          { text: "予約困難な高級店をサプライズで連れて行く",           score:  20, reaction: "……着ていく服、合ってないかも。", afterScoreLine: "サプライズは負担になりやすい。" },
+          { text: "とりあえずチェーンの居酒屋（禁煙席不明）",           score:  60, reaction: "（咳き込みながら）",          afterScoreLine: "「安い」より「不快でない」が先。" },
+          { text: "行ったことないジャンルの店にワクワクで突入",         score:  80, reaction: "メニューが読めない……",       afterScoreLine: "冒険は楽しいが、初手は安心感が勝つことが多い。" },
+        ],
+      },
+      {
+        situation: "2回目デートの誘い。彼は「脈なし恐怖」で早押ししたい。",
+        options: [
+          { text: "具体的な日程候補を2つ＋内容を短く提案",           score: 100, reaction: "その日空いてる。行こう。",     afterScoreLine: "意思決定が楽になるほど、返事は返ってくる。" },
+          { text: "「会いたい」だけを連投して感情を伝える",         score:  20, reaction: "……うん。",                      afterScoreLine: "次の行動が見えないと相手は困る。" },
+          { text: "「友達としても会いたい」と逃げ道を作る",         score:  60, reaction: "友達……うん。",                 afterScoreLine: "安全策だが、関係性が曖昧になる。" },
+          { text: "相手のSNS更新を根拠に空いてる日を推測して誘う", score:  80, reaction: "……なんで知ってるの？",         afterScoreLine: "偶然に見せられないと、監視に近づく。" },
+        ],
+      },
+      {
+        situation: "会話中。彼は「自分の凄さ」を自然に入れたい。",
+        options: [
+          { text: "相手の話を一段深く聞いてから、関連する自分の話を短く", score: 100, reaction: "それ面白いね。私も似たのあって……", afterScoreLine: "会話はキャッチボール。深掘りが信頼を作る。" },
+          { text: "相手の話を遮って成果を数字で返す",                     score:  20, reaction: "（話が続かない）",              afterScoreLine: "会話の主導権を奪うと、居心地が悪くなる。" },
+          { text: "沈黙が怖くてテンプレの雑学を連発する",                 score:  60, reaction: "へー……",                       afterScoreLine: "沈黙は悪じゃない。" },
+          { text: "自虐で場を和ませつつ実は凄い",                         score:  80, reaction: "（笑うが心配になる）",          afterScoreLine: "自虐が癖になると、相手は照応に疲れる。" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "lv3",
+    title: "第3章：修羅場の匂いがする",
+    tagline: "誤読・嫉妬・体面。半分ネタ、半分本気の危険地帯。",
+    accent: "#c9b6ff",
+    questions: [
+      {
+        situation: "彼は「脈ありサイン」を探して、すべて肯定解釈している。",
+        options: [
+          { text: "事実と解釈を分けてメモし、第三者視点で確認する", score: 100, reaction: "……落ち着いてるね。",        afterScoreLine: "解釈の癖を止められると、判断が安定する。" },
+          { text: "既読タイミングを恋のシグナルとして分析する",     score:  20, reaction: "（生活のノイズでしかない）", afterScoreLine: "多くは偶然。分析ほど虚無が深まる。" },
+          { text: "「脈なし」に備えて先に引く",                     score:  60, reaction: "なんで急に冷たいの？",       afterScoreLine: "防衛が強すぎると、相手が混乱する。" },
+          { text: "友人に会話ログを全部見せて採決してもらう",       score:  80, reaction: "それ、相手のプライバシー？", afterScoreLine: "共有範囲を誤ると、信頼を落とす。" },
+        ],
+      },
+      {
+        situation: "相手に異性の友達がいると聞いた。彼は動揺している。",
+        options: [
+          { text: "嫉妬は認めつつ、相手の境界を尊重して聞く",     score: 100, reaction: "ありがとう、ちゃんと話してくれて。", afterScoreLine: "感情とルールを分けられると、大人に見える。" },
+          { text: "SNSで友達を特定して調べる",                   score:  20, reaction: "（最悪の匂い）",                   afterScoreLine: "境界線を越えると、関係は一気に壊れやすい。" },
+          { text: "「男なら嫉妬しろ」と自分を鼓舞する",           score:  60, reaction: "（空気が荒い）",                   afterScoreLine: "感情は自然。演技の嫉妬は伝わる。" },
+          { text: "異性友達を禁止する約束を取り付けようとする",   score:  80, reaction: "それは無理かも。",                  afterScoreLine: "コントロールは恋愛ではなく支配に寄る。" },
+        ],
+      },
+      {
+        situation: "最終局面。彼は「救われた証拠」が欲しい。",
+        options: [
+          { text: "相手のペースを尊重し、次の小さな約束だけ取り付ける", score: 100, reaction: "うん。それなら大丈夫。",  afterScoreLine: "小さな約束の積み上げが、関係を作る。" },
+          { text: "「好きかどうか」だけを今夜中に答えさせる",           score:  20, reaction: "……無理。",                afterScoreLine: "期限の圧は、逃げ道を塞ぐ。" },
+          { text: "長文で自分の全歴史と覚悟を送る",                     score:  60, reaction: "（返信に困る）",          afterScoreLine: "重さは相手の準備があって初めて届く。" },
+          { text: "「お前が悪い」と世界を説明する",                     score:  80, reaction: "（会話終了）",            afterScoreLine: "救済は支配に反転しやすい。" },
+        ],
+      },
+    ],
+  },
+];
+
+window.SAMPLE_BG = [
+  "../../assets/backgrounds/haikei1.png",
+  "../../assets/backgrounds/haikei2.png",
+  "../../assets/backgrounds/haikei3.png",
+  "../../assets/backgrounds/haikei4.png",
+];

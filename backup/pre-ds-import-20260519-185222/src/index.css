@@ -1,0 +1,53 @@
+:root {
+  color-scheme: light;
+  /* ギャルゲでよくある「クリームUI + 茶インク + スモークピンクアクセント」 */
+  --vn-ink: #3d342c;
+  --vn-ink-muted: rgba(61, 52, 44, 0.72);
+  --vn-ink-faint: rgba(61, 52, 44, 0.52);
+  --vn-panel: #fffdf9;
+  --vn-panel2: #fdf6ee;
+  --vn-panel-edge: #e7dfd6;
+  --vn-brown-frame: #a68462;
+  --vn-brown-deep: #6f563f;
+  --vn-accent-rose: #e8789a;
+  --vn-accent-rose-soft: #f4c4d4;
+  --vn-accent-champagne: #f3e3cc;
+  --vn-font-serif: 'Noto Serif JP', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
+  --vn-font-ui: 'Zen Kaku Gothic New', 'Yu Gothic UI', sans-serif;
+  --vn-font-display: 'Shippori Mincho B1', 'Noto Serif JP', serif;
+  --vn-font-mono: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* 後方互換（App.css 内の参照） */
+  --vn-text: var(--vn-ink);
+  --vn-gold: var(--vn-brown-frame);
+  --vn-pink: var(--vn-accent-rose);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #efe8df;
+}
+
+body {
+  font-family: var(--vn-font-ui);
+  font-weight: 500;
+  color: var(--vn-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100dvh;
+  width: 100%;
+}
+
+button {
+  font-family: inherit;
+}

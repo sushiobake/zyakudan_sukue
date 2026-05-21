@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body{padding:0;background:var(--panel)}
+  .wrap{padding:22px 26px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .sw{display:flex;flex-direction:column;gap:8px}
+  .chip{height:72px;border-radius:var(--r-card)}
+  .n{font-family:var(--font-ui);font-weight:700;font-size:12px;color:var(--ink)}
+  .h{font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);letter-spacing:.04em}
+  .tag{margin-top:14px;grid-column:1/-1;font-family:var(--font-ui);font-weight:700;font-size:11px;letter-spacing:.18em;color:var(--rose);text-transform:uppercase}
+</style></head>
+<body><div class="wrap">
+  <div class="sw"><div class="chip" style="background:#e8789a"></div><div class="n">rose</div><div class="h">#E8789A · accent</div></div>
+  <div class="sw"><div class="chip" style="background:#f4c4d4"></div><div class="n">rose-soft</div><div class="h">#F4C4D4 · hover</div></div>
+  <div class="sw"><div class="chip" style="background:#c73e6e"></div><div class="n">rose-deep</div><div class="h">#C73E6E · link</div></div>
+  <div class="sw"><div class="chip" style="background:linear-gradient(90deg,#e8789a,#f5b0c4)"></div><div class="n">grad-rose</div><div class="h">90° linear · CTA</div></div>
+  <div class="tag">— one accent, three weights —</div>
+</div></body></html>

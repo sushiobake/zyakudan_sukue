@@ -1,0 +1,198 @@
+/* ============================================================
+   sushiobake studio — colors & typography
+   ------------------------------------------------------------
+   Mature romance-sim visual identity: cream UI, brown ink,
+   smoky-pink accent. Mincho display + JP gothic body.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700&family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap");
+
+:root {
+  color-scheme: light;
+
+  /* ----- INK / FOREGROUND (warm brown, not black) ---------- */
+  --ink:           #3d342c;             /* primary text       */
+  --ink-muted:     rgba(61, 52, 44, 0.72);
+  --ink-faint:     rgba(61, 52, 44, 0.52);
+  --ink-ghost:     rgba(61, 52, 44, 0.28);
+
+  /* ----- PANEL / BACKGROUND (cream paper) ------------------ */
+  --panel:         #fffdf9;             /* main panel         */
+  --panel-2:       #fdf6ee;             /* second-layer panel */
+  --panel-edge:    #e7dfd6;             /* hairline borders   */
+  --page:          #efe8df;             /* page back, body bg */
+  --page-warm:     #f4f0ea;             /* admin / utility    */
+
+  /* ----- BROWN FRAME (mid-tone wood/leather) --------------- */
+  --brown-frame:   #a68462;             /* hairline / chip    */
+  --brown-deep:    #6f563f;             /* heading sub        */
+  --brown-soft:    #c9b8a8;             /* muted border       */
+
+  /* ----- ACCENT — SMOKY ROSE (signature) ------------------- */
+  --rose:          #e8789a;             /* primary accent     */
+  --rose-soft:     #f4c4d4;             /* hover/secondary    */
+  --rose-deep:     #c73e6e;             /* hot highlight      */
+  --rose-tint:     rgba(232, 120, 154, 0.16); /* selected bg  */
+
+  /* ----- CHAMPAGNE / WARM HIGHLIGHT ------------------------ */
+  --champagne:     #f3e3cc;             /* warm wash          */
+  --gold:          #d4a017;             /* perfect-score tint */
+
+  /* ----- SCORE LEVELS (data-driven) ------------------------ */
+  --score-100-a:   #d4a017;  --score-100-b: #e8789a;  --score-100-c: #f6c4d4;
+  --score-80-a:    #e84874;  --score-80-b:  #f092aa;  --score-80-c:  #f6c4d4;
+  --score-60-a:    #d9782a;  --score-60-b:  #f0a868;  --score-60-c:  #f6d4b8;
+  --score-20-a:    #5a6a78;  --score-20-b:  #8a9aaa;  --score-20-c:  #b8c4d0;
+
+  /* ----- ADV WINDOW (deep aubergine, near-black w/ purple)- */
+  --adv-body:      rgba(36, 28, 52, 0.92);
+  --adv-body-fade: rgba(36, 28, 52, 0.45);
+  --adv-name:      rgba(72, 48, 96, 0.92);
+  --adv-text:      #ffffff;
+
+  /* ----- SEMANTIC ------------------------------------------ */
+  --ok:            #2e6b3a;
+  --ok-bg:         #e8f5e9;
+  --danger:        #a83242;
+  --danger-edge:   #d45a6a;
+
+  /* ===========  TYPOGRAPHY  ============================== */
+  --font-serif:   "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  --font-ui:      "Zen Kaku Gothic New", "Yu Gothic UI", system-ui, sans-serif;
+  --font-display: "Shippori Mincho B1", "Noto Serif JP", serif;
+  --font-mono:    ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* Type scale — sized for both web app & 1280×720 quiz HUD  */
+  --fz-eyebrow:   0.72rem;   /* SCENE labels, CAPS, mono     */
+  --fz-meta:      0.78rem;   /* hints, microcopy             */
+  --fz-body-sm:   0.88rem;
+  --fz-body:      1rem;
+  --fz-lead:      1.08rem;   /* dialog body                  */
+  --fz-h3:        1.25rem;
+  --fz-h2:        1.6rem;
+  --fz-h1:        clamp(1.75rem, 4.2vw, 2.75rem);
+  --fz-display:   clamp(2.6rem, 7vw, 3.6rem); /* score number */
+
+  --tracking-caps:   0.28em;
+  --tracking-ribbon: 0.42em;
+  --tracking-body:   0.02em;
+
+  /* ===========  SPACING / RADIUS / ELEVATION  ============ */
+  --r-sharp:      2px;     /* dialog box, choice rows         */
+  --r-card:       4px;     /* most cards                      */
+  --r-card-lg:    8px;     /* ending card, admin card         */
+  --r-pill:       999px;
+
+  --space-1:      4px;
+  --space-2:      8px;
+  --space-3:      12px;
+  --space-4:      16px;
+  --space-5:      20px;
+  --space-6:      24px;
+  --space-7:      32px;
+  --space-8:      40px;
+
+  /* Shadow system — soft + warm, never crisp grey            */
+  --shadow-card:  0 8px 24px rgba(90, 72, 58, 0.06);
+  --shadow-pop:   0 14px 34px rgba(90, 72, 58, 0.12);
+  --shadow-rose:  0 14px 34px rgba(232, 120, 154, 0.28);
+  --shadow-adv:   0 8px 28px rgba(0, 0, 0, 0.28);
+
+  --hairline:     1px solid var(--panel-edge);
+  --hairline-warm: 1px solid rgba(166, 132, 98, 0.38);
+
+  /* Gradients reused throughout                              */
+  --grad-rose:      linear-gradient(90deg, #e8789a, #f5b0c4);
+  --grad-rose-soft: linear-gradient(90deg, #f06292, #f8b8cc);
+  --grad-paper:     linear-gradient(165deg, rgba(255,253,249,0.96), rgba(254,245,236,0.94));
+  --grad-menu-btn:  linear-gradient(105deg,
+                      rgba(255, 253, 249, 0.94) 0%,
+                      rgba(255, 247, 240, 0.82) 55%,
+                      rgba(255, 253, 249, 0.62) 100%);
+  --grad-adv-window: linear-gradient(105deg,
+                      rgba(36, 28, 52, 0.92) 0%,
+                      rgba(36, 28, 52, 0.88) 42%,
+                      rgba(36, 28, 52, 0.45) 72%,
+                      transparent 100%);
+}
+
+/* ============================================================
+   SEMANTIC ELEMENTS
+   ============================================================ */
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fz-h1);
+  line-height: 1.28;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  margin: 0 0 var(--space-4);
+}
+
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--fz-h2);
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 0 0 var(--space-3);
+}
+
+h3, .h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fz-h3);
+  color: var(--ink);
+  margin: 0 0 var(--space-2);
+}
+
+p, .p {
+  font-family: var(--font-serif);
+  font-size: var(--fz-body);
+  line-height: 1.95;
+  color: var(--ink-muted);
+  margin: 0 0 var(--space-4);
+}
+
+.eyebrow {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: var(--fz-eyebrow);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--rose);
+}
+
+.caps-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fz-meta);
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+}
+
+.dialog-text {
+  font-family: var(--font-ui);
+  font-size: var(--fz-lead);
+  line-height: 1.85;
+  letter-spacing: var(--tracking-body);
+  color: var(--adv-text);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+a {
+  color: var(--rose-deep);
+  text-decoration: none;
+  font-weight: 700;
+}
+a:hover { color: var(--rose); }
+
+* { box-sizing: border-box; }

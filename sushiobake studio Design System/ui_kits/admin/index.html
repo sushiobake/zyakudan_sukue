@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sushiobake admin — UI kit</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="kit.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;600;700&family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root" data-screen-label="Admin"></div>
+
+  <script src="../game/data.js"></script>
+  <script type="text/babel" src="components.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useCallback, useMemo } = React;
+
+    function emptyOption()   { return { text: "", score: 60, reaction: "", afterScoreLine: "" }; }
+    function emptyQuestion() { return { situation: "", options: [emptyOption(), emptyOption(), emptyOption(), emptyOption()] }; }
+
+    function App() {
+      const [levels, setLevels] = useState(() => structuredClone(window.SAMPLE_LEVELS));
+      const [levelIndex, setLevelIndex] = useState(0);
+      const [questionIndex, setQuestionIndex] = useState(0);
+      const [status, setStatus] = useState("");
+      const [previewActive, setPreviewActive] = useState(true);
+
+      const level = levels[levelIndex];
+      const question = level?.questions[questionIndex];
+
+      const flash = (m) => { setStatus(m); setTimeout(() => setStatus(""), 4000); };
+
+      const updateLevel = useCallback((patch) => {
+        setLevels((prev) => {
+          const next = structuredClone(prev);
+          next[levelIndex] = { ...next[levelIndex], ...patch };
+          return next;
+        });
+      }, [levelIndex]);
+
+      const updateQuestion = useCallback((patch) => {
+        setLevels((prev) => {
+          const next = structuredClone(prev);
+          const qs = [...next[levelIndex].questions];
+          qs[questionIndex] = { ...qs[questionIndex], ...patch };
+          next[levelIndex] = { ...next[levelIndex], questions: qs };
+          return next;
+        });
+      }, [levelIndex, questionIndex]);
+
+      const updateOption = useCallback((optIndex, patch) => {
+        setLevels((prev) => {
+          const next = structuredClone(prev);
+          const q = { ...next[levelIndex].questions[questionIndex] };
+          const opts = [...q.options];
+          opts[optIndex] = { ...opts[optIndex], ...patch };
+          q.options = opts;
+          const qs = [...next[levelIndex].questions];
+          qs[questionIndex] = q;
+          next[levelIndex] = { ...next[levelIndex], questions: qs };
+          return next;
+        });
+      }, [levelIndex, questionIndex]);
+
+      const addQuestion = useCallback(() => {
+        setLevels((prev) => {
+          const next = structuredClone(prev);
+          next[levelIndex].questions = [...next[levelIndex].questions, emptyQuestion()];
+          return next;
+        });
+        setQuestionIndex(level?.questions.length ?? 0);
+      }, [level?.questions.length, levelIndex]);
+
+      const removeQuestion = useCallback(() => {
+        if (!level || level.questions.length <= 1) return;
+        setLevels((prev) => {
+          const next = structuredClone(prev);
+          next[levelIndex].questions = next[levelIndex].questions.filter((_, i) => i !== questionIndex);
+          return next;
+        });
+        setQuestionIndex((i) => Math.max(0, i - 1));
+      }, [level, levelIndex, questionIndex]);
+
+      const addLevel = useCallback(() => {
+        const id = `lv${levels.length + 1}`;
+        const newLevel = {
+          id, title: `第${levels.length + 1}章：新しい章`, tagline: "", accent: "#ff7eb3",
+          questions: [emptyQuestion()],
+        };
+        setLevels((prev) => [...prev, newLevel]);
+        setLevelIndex(levels.length); setQuestionIndex(0);
+      }, [levels.length]);
+
+      if (!level || !question) {
+        return <div className="admin-root"><p>データがありません。「章を追加」してください。</p></div>;
+      }
+
+      return (
+        <div className="admin-root">
+          <AdminHeader
+            status={status}
+            previewActive={previewActive}
+            onPreview={() => { setPreviewActive(true); flash("プレビューを保存しました。ゲームを別タブで開いて確認してください"); }}
+            onExport={() => flash("content.json をダウンロードしました → public/ に置くと本番に反映されます")}
+            onImport={() => flash("JSON を読み込みました")}
+            onReset={() => flash("デフォルトに戻しました")}
+            onClearPreview={() => { setPreviewActive(false); flash("プレビュー（localStorage）をクリアしました"); }}
+          />
+          <div className="admin-layout">
+            <AdminSidebar
+              levels={levels}
+              levelIndex={levelIndex}
+              questionIndex={questionIndex}
+              onPickLevel={(i) => { setLevelIndex(i); setQuestionIndex(0); }}
+              onPickQuestion={setQuestionIndex}
+              onAddLevel={addLevel}
+              onAddQuestion={addQuestion}
+            />
+            <main className="admin-main">
+              <LevelCard level={level} onChange={updateLevel} />
+              <QuestionCard
+                question={question}
+                qIndex={questionIndex}
+                total={level.questions.length}
+                onChange={updateQuestion}
+                onRemove={removeQuestion}
+                canRemove={level.questions.length > 1}
+              />
+              <OptionsCard question={question} onChangeOption={updateOption} />
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

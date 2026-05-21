@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body{padding:18px;background:var(--page);display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tile{
+    aspect-ratio:5/6;
+    position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#fdf6ee,#efe8df);
+    border-radius:4px;border:1px solid var(--panel-edge);
+  }
+  .tile{background-image:url('../assets/characters/chara3_touka.png');background-repeat:no-repeat;background-size:200% auto}
+  /* Top row — figures sit naturally within their quadrant */
+  .p1{background-position:left  4% top  6%}
+  .p2{background-position:right 4% top  6%}
+  /* Bottom row — heads sit at quadrant edge in source; shift down a touch for headroom */
+  .p3{background-position:left  4% top 94%}
+  .p4{background-position:right 4% top 94%}
+</style></head>
+<body>
+  <div class="tile p1"></div>
+  <div class="tile p2"></div>
+  <div class="tile p3"></div>
+  <div class="tile p4"></div>
+</body></html>

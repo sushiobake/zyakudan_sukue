@@ -1,0 +1,258 @@
+.admin-root {
+  min-height: 100dvh;
+  background: #f4f0ea;
+  color: #3d342c;
+  font-family: 'Zen Kaku Gothic New', 'Yu Gothic UI', sans-serif;
+}
+
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 16px 20px 12px;
+  background: rgba(255, 253, 249, 0.96);
+  border-bottom: 1px solid #e7dfd6;
+  backdrop-filter: blur(10px);
+}
+
+.admin-title {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.admin-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(61, 52, 44, 0.65);
+}
+
+.admin-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-btn {
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #c9b8a8;
+  background: #fffdf9;
+  color: #3d342c;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-btn:hover {
+  border-color: #e8789a;
+}
+
+.admin-btn--primary {
+  background: linear-gradient(90deg, #e8789a, #f5b0c4);
+  border-color: transparent;
+  color: #fffdf9;
+}
+
+.admin-btn--ghost {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-btn--muted {
+  opacity: 0.75;
+}
+
+.admin-btn--small {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.admin-btn--danger {
+  border-color: #d45a6a;
+  color: #a83242;
+}
+
+.admin-status {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #e8f5e9;
+  color: #2e6b3a;
+  font-size: 0.85rem;
+}
+
+.admin-badge {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: #c73e6e;
+  font-weight: 700;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 0;
+  min-height: calc(100dvh - 140px);
+}
+
+.admin-sidebar {
+  border-right: 1px solid #e7dfd6;
+  background: #fffaf6;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.admin-sidebar-section + .admin-sidebar-section {
+  margin-top: 20px;
+}
+
+.admin-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.admin-sidebar-head h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+}
+
+.admin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-list-btn {
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #3d342c;
+}
+
+.admin-list-btn:hover {
+  background: rgba(232, 120, 154, 0.08);
+}
+
+.admin-list-btn--active {
+  background: rgba(232, 120, 154, 0.16);
+  border-color: rgba(232, 120, 154, 0.45);
+  font-weight: 700;
+}
+
+.admin-main {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.admin-card {
+  background: #fffdf9;
+  border: 1px solid #e7dfd6;
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(90, 72, 58, 0.06);
+}
+
+.admin-card h2 {
+  margin: 0 0 14px;
+  font-size: 1rem;
+}
+
+.admin-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-card-head h2 {
+  margin: 0;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: rgba(61, 52, 44, 0.7);
+}
+
+.admin-field--full {
+  grid-column: 1 / -1;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-field select {
+  padding: 8px 10px;
+  border: 1px solid #d4c8bc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #3d342c;
+  background: #fff;
+}
+
+.admin-field textarea {
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.admin-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-option-block {
+  padding: 14px;
+  border: 1px dashed #e7dfd6;
+  border-radius: 6px;
+  background: #fffaf6;
+}
+
+.admin-option-block h3 {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  color: #c73e6e;
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    border-right: none;
+    border-bottom: 1px solid #e7dfd6;
+    max-height: 40vh;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+}

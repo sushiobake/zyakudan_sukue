@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body{padding:22px;background:var(--panel)}
+  .row{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+  .icon{width:32px;height:32px}
+  .icon.dark{filter:brightness(0)}
+  .icon.ink{filter:invert(20%) sepia(8%) saturate(900%) hue-rotate(-10deg) brightness(95%)}
+  .grp{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .lbl{font-family:ui-monospace,monospace;font-size:9px;letter-spacing:.12em;color:var(--ink-faint);text-transform:uppercase}
+  .note{margin-top:14px;font-family:var(--font-ui);font-size:11px;color:var(--ink-muted);line-height:1.65}
+  .note b{color:#c73e6e}
+</style></head>
+<body>
+  <div class="row">
+    <div class="grp"><svg class="icon ink" viewBox="0 0 16 17"><use href="../assets/icons/icons.svg#bluesky-icon"/></svg><div class="lbl">BLUESKY</div></div>
+    <div class="grp"><svg class="icon ink" viewBox="0 0 20 19"><use href="../assets/icons/icons.svg#discord-icon"/></svg><div class="lbl">DISCORD</div></div>
+    <div class="grp"><svg class="icon ink" viewBox="0 0 19 19"><use href="../assets/icons/icons.svg#github-icon"/></svg><div class="lbl">GITHUB</div></div>
+    <div class="grp"><svg class="icon ink" viewBox="0 0 19 19"><use href="../assets/icons/icons.svg#x-icon"/></svg><div class="lbl">X</div></div>
+    <div class="grp"><svg class="icon" viewBox="0 0 21 20"><use href="../assets/icons/icons.svg#documentation-icon"/></svg><div class="lbl">DOC*</div></div>
+    <div class="grp"><svg class="icon" viewBox="0 0 20 20"><use href="../assets/icons/icons.svg#social-icon"/></svg><div class="lbl">SOCIAL*</div></div>
+  </div>
+  <div class="note"><b>*</b>outline glyphs retain the scaffold purple (#aa3bff). Use as utility only; do not colorize rose.</div>
+</body></html>

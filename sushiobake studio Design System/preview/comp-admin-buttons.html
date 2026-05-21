@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body{padding:22px 24px;background:var(--page-warm)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .btn{cursor:pointer;padding:9px 14px;border-radius:6px;border:1px solid #c9b8a8;background:#fffdf9;color:#3d342c;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;font-weight:600;transition:border-color .14s}
+  .btn:hover{border-color:#e8789a}
+  .btn.primary{background:linear-gradient(90deg,#e8789a,#f5b0c4);border-color:transparent;color:#fffdf9}
+  .btn.danger{border-color:#d45a6a;color:#a83242}
+  .btn.muted{opacity:.75}
+  .status{padding:8px 12px;border-radius:4px;background:#e8f5e9;color:#2e6b3a;font-family:'Zen Kaku Gothic New',sans-serif;font-size:13px;display:inline-block}
+  .badge{font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;color:#c73e6e;font-weight:700;margin-left:8px}
+</style></head>
+<body>
+  <div class="row">
+    <button class="btn primary">ゲームでプレビュー</button>
+    <button class="btn">JSON エクスポート</button>
+    <button class="btn">JSON インポート</button>
+    <button class="btn danger">この問題を削除</button>
+    <button class="btn muted">プレビュー解除</button>
+  </div>
+  <span class="status">JSON を読み込みました</span><span class="badge">● プレビューデータが有効です</span>
+</body></html>

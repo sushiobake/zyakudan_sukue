@@ -1,0 +1,11 @@
+/* sushiobake admin UI kit — extends admin.css with kit reset */
+@import url("../../colors_and_type.css");
+
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: "Zen Kaku Gothic New", "Yu Gothic UI", sans-serif;
+  color: #3d342c;
+  background: #f4f0ea;
+}
+#root { min-height: 100dvh; }
+* { box-sizing: border-box; }
