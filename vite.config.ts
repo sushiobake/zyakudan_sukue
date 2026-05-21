@@ -168,6 +168,10 @@ function absoluteOgMeta(siteUrl: string): Plugin {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  // サーバー用ミドルウェア（Supabase 等）が .env.local を読めるようにする
+  for (const [key, value] of Object.entries(env)) {
+    if (process.env[key] === undefined) process.env[key] = value
+  }
   const siteUrl = (env.VITE_SITE_URL || '').trim().replace(/\/$/, '')
 
   return {

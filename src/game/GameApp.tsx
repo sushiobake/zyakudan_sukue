@@ -53,12 +53,15 @@ function resolveCharaPose(
   return charaPoseFromScore(picked?.score)
 }
 
+const SHARE_GAME_TITLE = '弱者男性を救え！'
+const SHARE_GAME_SUBTITLE = '“リアル”恋愛シミュレーション'
+
 function buildShareText(
   level: LevelPack,
   total: number,
   rank: ScoreRank,
 ): string {
-  return `弱者男性を救え！\nあなたは${rank.title}\n${level.title} · 合計 ${total} / ${CHAPTER_SCORE_MAX} 点\n#弱者男性を救え`
+  return `${SHARE_GAME_TITLE}\n${SHARE_GAME_SUBTITLE}\nあなたは${rank.title}\n${level.title} · 合計 ${total} / ${CHAPTER_SCORE_MAX} 点`
 }
 
 /** 章内の問題順は配列順のまま（先頭5問）。シャッフルしない */
