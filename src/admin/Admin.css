@@ -643,3 +643,96 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.admin-analytics__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.admin-analytics__head h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.admin-analytics__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-analytics__password {
+  min-width: 160px;
+}
+
+.admin-status--error {
+  color: #8b3030;
+  background: rgba(180, 60, 60, 0.08);
+}
+
+.admin-analytics__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.admin-analytics__stat {
+  background: rgba(255, 252, 245, 0.9);
+  border: 1px solid rgba(80, 60, 40, 0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: rgba(50, 40, 30, 0.75);
+}
+
+.admin-analytics__stat strong {
+  font-size: 1.2rem;
+  color: #2a2218;
+}
+
+.admin-analytics__table-wrap {
+  overflow-x: auto;
+}
+
+.admin-analytics__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.admin-analytics__table th,
+.admin-analytics__table td {
+  border-bottom: 1px solid rgba(80, 60, 40, 0.1);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-analytics__table th {
+  font-weight: 700;
+  color: rgba(40, 32, 24, 0.85);
+}
+
+.admin-analytics__answers {
+  margin: 0;
+  padding-left: 1.1em;
+  list-style: disc;
+}
+
+.admin-analytics__choice-snippet {
+  color: rgba(50, 40, 30, 0.65);
+  font-size: 0.75rem;
+}

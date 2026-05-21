@@ -24,9 +24,10 @@ import type {
   QuizQuestion,
   ScoreRank,
 } from '../types'
+import AdminAnalyticsPage from './AdminAnalyticsPage'
 import './Admin.css'
 
-type AdminTab = 'edit' | 'ranks'
+type AdminTab = 'edit' | 'ranks' | 'analytics'
 
 function cloneRanks(ranks: ScoreRank[]): ScoreRank[] {
   return structuredClone(ranks)
@@ -302,7 +303,7 @@ export default function AdminApp() {
     )
   }
 
-  if (!level || !question) {
+  if (adminTab !== 'analytics' && (!level || !question)) {
     return (
       <div className="admin-root">
         <p>データがありません。「章を追加」してください。</p>
@@ -336,6 +337,13 @@ export default function AdminApp() {
             onClick={() => setAdminTab('ranks')}
           >
             称号
+          </button>
+          <button
+            type="button"
+            className={`admin-btn ${adminTab === 'analytics' ? 'admin-btn--tab-active' : ''}`}
+            onClick={() => setAdminTab('analytics')}
+          >
+            プレイ履歴
           </button>
           <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave}>
             保存
@@ -455,7 +463,9 @@ export default function AdminApp() {
         </aside>
 
         <main className="admin-main">
-          {adminTab === 'ranks' ? (
+          {adminTab === 'analytics' ? (
+            <AdminAnalyticsPage />
+          ) : adminTab === 'ranks' ? (
             <section className="admin-card">
               <div className="admin-card-head">
                 <h2>章末称号（5問合計100点満点）</h2>
@@ -518,7 +528,7 @@ export default function AdminApp() {
                   })}
               </ul>
             </section>
-          ) : (
+          ) : level && question ? (
             <>
           <section className="admin-card admin-card--compact">
             <div className="admin-level-row">
@@ -708,7 +718,7 @@ export default function AdminApp() {
             </label>
           </section>
             </>
-          )}
+          ) : null}
         </main>
       </div>
     </div>

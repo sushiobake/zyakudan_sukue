@@ -30,6 +30,10 @@ import { SituationText } from '../components/SituationText'
 import { ChoiceText } from '../utils/choiceText'
 import { ReviewText } from '../utils/reviewText'
 import { stripReviewLeadHeading } from '../utils/reviewTextHelpers'
+import {
+  createAnalyticsPlayId,
+  trackAnalyticsEvent,
+} from '../analytics/analyticsClient'
 import type { LevelPack, QuizOption, QuizQuestion, ScoreRank } from '../types'
 import '../App.css'
 import '../title.css'
@@ -76,6 +80,9 @@ export default function GameApp() {
   const [scores, setScores] = useState<number[]>([])
   const [screenVeil, setScreenVeil] = useState(false)
   const transitionTimer = useRef<number | null>(null)
+  const playIdRef = useRef<string | null>(null)
+  const titleVisitSent = useRef(false)
+  const chapterFinishSent = useRef(false)
   const clearTransitionTimer = useCallback(() => {
     if (transitionTimer.current != null) {
       window.clearTimeout(transitionTimer.current)
@@ -122,10 +129,26 @@ export default function GameApp() {
     setScores([])
   }, [])
 
+  useEffect(() => {
+    if (screen === 'title' && !titleVisitSent.current) {
+      titleVisitSent.current = true
+      trackAnalyticsEvent('title_visit')
+    }
+  }, [screen])
+
   const startLevel = useCallback(
     (pack: LevelPack) => {
       clearTransitionTimer()
       setScreenVeil(true)
+      chapterFinishSent.current = false
+      playIdRef.current = createAnalyticsPlayId()
+      const chapterIndex = levels.findIndex((lv) => lv.id === pack.id)
+      trackAnalyticsEvent('chapter_start', {
+        playId: playIdRef.current,
+        levelId: pack.id,
+        levelIndex: chapterIndex >= 0 ? chapterIndex : undefined,
+        payload: { levelTitle: pack.title },
+      })
 
       transitionTimer.current = window.setTimeout(() => {
         const runQuestions = pickRunQuestions(pack.questions)
@@ -142,19 +165,33 @@ export default function GameApp() {
         }, 60)
       }, 480)
     },
-    [clearTransitionTimer],
+    [clearTransitionTimer, levels],
   )
 
   const advanceFromSituation = useCallback(() => {
     setQuizPhase('choices')
   }, [])
 
-  const pickOption = useCallback((opt: QuizOption, e: MouseEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    setPicked(opt)
-    setQuizPhase('reaction')
-  }, [])
+  const pickOption = useCallback(
+    (opt: QuizOption, optionIndex: number, e: MouseEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+      setPicked(opt)
+      setQuizPhase('reaction')
+      if (playIdRef.current && level) {
+        trackAnalyticsEvent('answer', {
+          playId: playIdRef.current,
+          levelId: level.id,
+          levelIndex: levels.findIndex((lv) => lv.id === level.id),
+          questionIndex: qIndex + 1,
+          optionIndex,
+          score: opt.score,
+          payload: { choiceText: opt.text.slice(0, 200) },
+        })
+      }
+    },
+    [level, levels, qIndex],
+  )
 
   const advanceFromReaction = useCallback(() => {
     setQuizPhase('result')
@@ -178,6 +215,58 @@ export default function GameApp() {
 
   const totalScore = useMemo(() => totalRunScore(scores), [scores])
   const rank = useMemo(() => getScoreRank(totalScore, ranks), [totalScore, ranks])
+
+  useEffect(() => {
+    if (screen !== 'final' || !level || !playIdRef.current || chapterFinishSent.current) return
+    chapterFinishSent.current = true
+    trackAnalyticsEvent('chapter_finish', {
+      playId: playIdRef.current,
+      levelId: level.id,
+      levelIndex: levels.findIndex((lv) => lv.id === level.id),
+      totalScore,
+      rankTitle: rank.title,
+      endReason: 'completed',
+      payload: { levelTitle: level.title },
+    })
+  }, [screen, level, levels, totalScore, rank.title])
+
+  const latestPlayStateRef = useRef({
+    screen,
+    levelId: null as string | null,
+    playId: null as string | null,
+    qIndex: 0,
+    answerCount: 0,
+  })
+
+  useEffect(() => {
+    latestPlayStateRef.current = {
+      screen,
+      levelId: level?.id ?? null,
+      playId: playIdRef.current,
+      qIndex,
+      answerCount: scores.length,
+    }
+  }, [screen, level, qIndex, scores.length])
+
+  useEffect(() => {
+    const onPageHide = () => {
+      const s = latestPlayStateRef.current
+      if (s.screen !== 'quiz' || !s.playId || !s.levelId) return
+      trackAnalyticsEvent(
+        'chapter_abandon',
+        {
+          playId: s.playId,
+          levelId: s.levelId,
+          questionIndex: s.qIndex + 1,
+          endReason: 'pagehide',
+          payload: { answerCount: s.answerCount },
+        },
+        { beacon: true },
+      )
+    }
+    window.addEventListener('pagehide', onPageHide)
+    return () => window.removeEventListener('pagehide', onPageHide)
+  }, [])
 
   const shareUrl = useMemo(() => {
     const pageUrl = resolveSiteUrl()
@@ -426,7 +515,7 @@ export default function GameApp() {
                       <button
                         type="button"
                         className="vn-choice-row"
-                        onClick={(e) => pickOption(opt, e)}
+                        onClick={(e) => pickOption(opt, i, e)}
                       >
                         <span className="vn-choice-row__idx">{i + 1}</span>
                         <span className="vn-choice-row__txt">

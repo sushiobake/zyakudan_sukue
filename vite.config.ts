@@ -2,6 +2,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { buildZyakudanAnalytics } from './server/buildAnalytics'
+import { adminPassword } from './server/env'
+import { fetchAnalyticsRows, insertAnalyticsEvent } from './server/supabaseRest'
 
 /** 管理画面の「保存」→ public/content.json / ranks.json を即更新（開発サーバーのみ） */
 function saveContentApi(saveToken: string | undefined): Plugin {
@@ -72,6 +75,81 @@ function saveContentApi(saveToken: string | undefined): Plugin {
   }
 }
 
+/** 開発サーバー用 analytics API（本番は Vercel api/） */
+function analyticsDevApi(): Plugin {
+  return {
+    name: 'analytics-dev-api',
+    configureServer(server) {
+      server.middlewares.use('/api/analytics', async (req, res, next) => {
+        if (req.method !== 'POST') {
+          next()
+          return
+        }
+        const chunks: Buffer[] = []
+        req.on('data', (chunk: Buffer) => chunks.push(chunk))
+        req.on('end', async () => {
+          try {
+            const raw = JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown
+            const result = await insertAnalyticsEvent(raw, {
+              referrer: typeof req.headers.referer === 'string' ? req.headers.referer : null,
+              userAgent: typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null,
+            })
+            res.statusCode = 200
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify(result.ok ? { success: true } : { success: false, skipped: result.skipped }))
+          } catch {
+            res.statusCode = 500
+            res.end(JSON.stringify({ success: false }))
+          }
+        })
+      })
+
+      server.middlewares.use('/api/admin/analytics', async (req, res, next) => {
+        if (req.method !== 'GET') {
+          next()
+          return
+        }
+        const password = adminPassword()
+        if (password) {
+          const provided = req.headers['x-zyakudan-admin-password']
+          const value = Array.isArray(provided) ? provided[0] : provided
+          if (value !== password) {
+            res.statusCode = 401
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ success: false, error: 'Unauthorized' }))
+            return
+          }
+        }
+        const url = new URL(req.url ?? '/', 'http://local')
+        const range = url.searchParams.get('range') ?? '7d'
+        const limit = Math.min(10000, Math.max(100, Number(url.searchParams.get('limit') ?? 5000)))
+        const fetched = await fetchAnalyticsRows(range, limit)
+        res.statusCode = 200
+        res.setHeader('Content-Type', 'application/json')
+        if (!fetched.ok || !fetched.rows) {
+          res.end(
+            JSON.stringify({
+              success: false,
+              error: fetched.skipped ? 'SupabaseNotConfigured' : 'SupabaseReadFailed',
+            }),
+          )
+          return
+        }
+        res.end(
+          JSON.stringify({
+            success: true,
+            range,
+            limit,
+            loaded: fetched.rows.length,
+            generatedAt: new Date().toISOString(),
+            ...buildZyakudanAnalytics(fetched.rows),
+          }),
+        )
+      })
+    },
+  }
+}
+
 /** OGP 画像を絶対URLに差し替え（VITE_SITE_URL 設定時） */
 function absoluteOgMeta(siteUrl: string): Plugin {
   return {
@@ -93,6 +171,11 @@ export default defineConfig(({ mode }) => {
   const siteUrl = (env.VITE_SITE_URL || '').trim().replace(/\/$/, '')
 
   return {
-    plugins: [react(), saveContentApi(env.SAVE_CONTENT_TOKEN), absoluteOgMeta(siteUrl)],
+    plugins: [
+      react(),
+      saveContentApi(env.SAVE_CONTENT_TOKEN),
+      analyticsDevApi(),
+      absoluteOgMeta(siteUrl),
+    ],
   }
 })
