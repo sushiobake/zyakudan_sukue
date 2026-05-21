@@ -388,7 +388,13 @@ export default function GameApp() {
       {screen === 'title' && (
         <div className="tps-screen">
           <header className="tps-top">
-            <a className="tps-studio" href="#" aria-label="sushiobake studio" onClick={(e) => e.preventDefault()}>
+            <a
+              className="tps-studio"
+              href="https://ci-en.net/creator/36415"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="sushiobake studio（Ci-en）"
+            >
               <img className="tps-studio__mark" src="/mark.svg" alt="" width={34} height={34} />
               <span className="tps-studio__name">
                 <b>sushiobake</b>
