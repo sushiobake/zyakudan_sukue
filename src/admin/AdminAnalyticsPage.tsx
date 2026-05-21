@@ -125,7 +125,7 @@ export default function AdminAnalyticsPage() {
         <div>
           <h2>プレイ履歴 / 分析</h2>
           <p className="admin-field-hint">
-            本番プレイヤーのログ（Supabase）。開発中は .env.local に Supabase 鍵が必要です。
+            本番プレイヤーのログ（Supabase）。.env.local に SUPABASE_URL と service_role 鍵を設定してください。
           </p>
         </div>
         <div className="admin-analytics__toolbar">
@@ -144,7 +144,7 @@ export default function AdminAnalyticsPage() {
             className="admin-input--compact admin-analytics__password"
             value={adminPassword}
             onChange={(e) => setAdminPassword(e.target.value)}
-            placeholder="管理パスワード"
+            placeholder="管理パスワード（ローカルは未設定で可）"
           />
           <button type="button" className="admin-btn admin-btn--primary" onClick={() => void load()} disabled={loading}>
             {loading ? '読込中…' : '再読込'}

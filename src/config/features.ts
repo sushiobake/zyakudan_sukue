@@ -1,6 +1,5 @@
 /**
- * 管理ルート（/#/admin）を有効にする。
- * 本番では VITE_ENABLE_ADMIN=true のときのみ（タイトルのリンクは出さない）。
+ * 管理画面（/#/admin）はローカル開発時のみ。
+ * 本番サイトには含めず、プレイ履歴・問題編集はすべてローカルから行う。
  */
-export const ADMIN_ENABLED =
-  import.meta.env.DEV || import.meta.env.VITE_ENABLE_ADMIN === 'true'
+export const ADMIN_ENABLED = import.meta.env.DEV
