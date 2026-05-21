@@ -26,6 +26,38 @@
   pointer-events: none;
 }
 
+.vn-bg-stack {
+  position: absolute;
+  inset: 0;
+}
+
+.vn-bg-stack .vn-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  transform: scale(1.02);
+  filter: saturate(1.05) contrast(1.02) brightness(1.03);
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.33, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+.vn-bg-img--next {
+  opacity: 0;
+}
+
+.vn-bg-stack--fading .vn-bg-img:not(.vn-bg-img--next) {
+  opacity: 0;
+}
+
+.vn-bg-stack--fading .vn-bg-img--next {
+  opacity: 1;
+}
+
+/* 単体 .vn-bg-img（互換・上書き用） */
 .vn-bg-img {
   width: 100%;
   height: 100%;

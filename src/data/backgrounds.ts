@@ -41,6 +41,43 @@ export function backgroundPath(id: BackgroundSceneId): string {
   return BACKGROUND_SCENES[id].path
 }
 
+/** クイズ用の全背景 URL（タイトル画面での先読み用） */
+export const ALL_QUIZ_BACKGROUND_URLS = BACKGROUND_SCENE_IDS.map(
+  (id) => BACKGROUND_SCENES[id].path,
+)
+
+/** 1枚の背景を先読み（失敗時も resolve） */
+export function preloadBackgroundImage(src: string): Promise<void> {
+  if (!src) return Promise.resolve()
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.src = src
+    if (img.complete) {
+      resolve()
+      return
+    }
+    img.onload = () => resolve()
+    img.onerror = () => resolve()
+  })
+}
+
+/** 複数背景を並列先読み */
+export function preloadBackgroundUrls(urls: Iterable<string>): Promise<void> {
+  const unique = [...new Set(urls)]
+  return Promise.all(unique.map(preloadBackgroundImage)).then(() => {})
+}
+
+/** 章の問題リストから使う背景 URL を一意に集める */
+export function backgroundUrlsForQuestions(
+  questions: { situation: string; background?: BackgroundSceneId }[],
+): string[] {
+  return [
+    ...new Set(
+      questions.map((q) => backgroundPath(resolveQuestionBackground(q))),
+    ),
+  ]
+}
+
 /** シチュ文から背景を推定（JSON に background が無い旧データ用） */
 export function inferBackgroundFromSituation(text: string): BackgroundSceneId {
   const t = text.replace(/\r\n/g, '\n')

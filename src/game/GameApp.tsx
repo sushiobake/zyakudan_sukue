@@ -8,9 +8,13 @@ import {
   type MouseEvent,
 } from 'react'
 import {
+  ALL_QUIZ_BACKGROUND_URLS,
   BACKGROUND_FALLBACK,
   TITLE_BACKGROUND,
   backgroundPath,
+  backgroundUrlsForQuestions,
+  preloadBackgroundImage,
+  preloadBackgroundUrls,
   resolveQuestionBackground,
 } from '../data/backgrounds'
 import DifficultyMeter from '../components/DifficultyMeter'
@@ -22,6 +26,7 @@ import { shuffle } from '../data/shuffle'
 import { CHAPTER_SCORE_MAX, QUESTION_SCORE_MAX, scoreToTier } from '../data/scores'
 import { charaPoseFromScore, preloadCharaPoses, type CharaPose } from '../data/sprite'
 import { AdvHitzone } from './AdvHitzone'
+import { BackgroundLayer } from './BackgroundLayer'
 import { CharaSprite } from './CharaSprite'
 import { ScreenVeil } from './ScreenVeil'
 import { ScrollHint } from '../components/ScrollHint'
@@ -42,6 +47,10 @@ type Screen = 'title' | 'quiz' | 'final' | 'loading'
 
 const QUESTIONS_PER_RUN = 5
 const HEROINE_NAME = '由良 さくら'
+/** 章開始の暗転（ms） */
+const CHAPTER_VEIL_MS = 480
+/** 問題切替の暗転（ms） */
+const QUESTION_VEIL_MS = 280
 
 function resolveCharaPose(
   screen: Screen,
@@ -99,6 +108,16 @@ export default function GameApp() {
   }, [screen])
 
   useEffect(() => {
+    void preloadBackgroundUrls(ALL_QUIZ_BACKGROUND_URLS)
+  }, [])
+
+  useEffect(() => {
+    if (screen !== 'title') return
+    preloadCharaPoses()
+    void preloadBackgroundUrls([...ALL_QUIZ_BACKGROUND_URLS, TITLE_BACKGROUND])
+  }, [screen])
+
+  useEffect(() => {
     let cancelled = false
     Promise.all([loadLevels(), loadRanks()]).then(([data, rankData]) => {
       if (cancelled) return
@@ -152,8 +171,17 @@ export default function GameApp() {
         payload: { levelTitle: pack.title },
       })
 
-      transitionTimer.current = window.setTimeout(() => {
+      void (async () => {
+        await new Promise<void>((resolve) => {
+          transitionTimer.current = window.setTimeout(() => {
+            transitionTimer.current = null
+            resolve()
+          }, CHAPTER_VEIL_MS)
+        })
+
         const runQuestions = pickRunQuestions(pack.questions)
+        await preloadBackgroundUrls(backgroundUrlsForQuestions(runQuestions))
+
         setLevel({ ...pack, runQuestions })
         setQIndex(0)
         setQuizPhase('situation')
@@ -165,7 +193,7 @@ export default function GameApp() {
           setScreenVeil(false)
           transitionTimer.current = null
         }, 60)
-      }, 480)
+      })()
     },
     [clearTransitionTimer, levels],
   )
@@ -200,16 +228,41 @@ export default function GameApp() {
   }, [])
 
   const finishQuestion = useCallback(() => {
-    if (!picked) return
+    if (!picked || !level) return
+    const nextIndex = qIndex + 1
     setScores((prev) => [...prev, picked.score])
-    if (qIndex + 1 < QUESTIONS_PER_RUN) {
-      setQIndex((i) => i + 1)
-      setPicked(null)
-      setQuizPhase('situation')
+
+    if (nextIndex < QUESTIONS_PER_RUN) {
+      const nextQ = level.runQuestions[nextIndex]
+      const nextBg = nextQ
+        ? backgroundPath(resolveQuestionBackground(nextQ))
+        : null
+
+      clearTransitionTimer()
+      setScreenVeil(true)
+
+      void (async () => {
+        if (nextBg) await preloadBackgroundImage(nextBg)
+        await new Promise<void>((resolve) => {
+          transitionTimer.current = window.setTimeout(() => {
+            transitionTimer.current = null
+            resolve()
+          }, QUESTION_VEIL_MS)
+        })
+
+        setQIndex(nextIndex)
+        setPicked(null)
+        setQuizPhase('situation')
+
+        transitionTimer.current = window.setTimeout(() => {
+          setScreenVeil(false)
+          transitionTimer.current = null
+        }, 60)
+      })()
     } else {
       setScreen('final')
     }
-  }, [picked, qIndex])
+  }, [picked, qIndex, level, clearTransitionTimer])
 
   const advanceFromResult = useCallback(() => {
     finishQuestion()
@@ -345,6 +398,18 @@ export default function GameApp() {
     setBgFailedUrl(desiredBackground)
   }, [desiredBackground])
 
+  const nextBgSrc = useMemo(() => {
+    if (screen !== 'quiz' || !level) return null
+    const nextQ = level.runQuestions[qIndex + 1]
+    if (!nextQ) return null
+    return backgroundPath(resolveQuestionBackground(nextQ))
+  }, [screen, level, qIndex])
+
+  useEffect(() => {
+    if (!nextBgSrc) return
+    void preloadBackgroundImage(nextBgSrc)
+  }, [nextBgSrc])
+
   const onAdvKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!advClickable) return
@@ -371,15 +436,7 @@ export default function GameApp() {
       data-score={screen === 'quiz' && picked ? scoreToTier(picked.score) : undefined}
     >
       <div className="vn-bg" aria-hidden>
-        <img
-          className="vn-bg-img"
-          src={bgSrc}
-          alt=""
-          width={1920}
-          height={1080}
-          decoding="async"
-          onError={onBgError}
-        />
+        <BackgroundLayer src={bgSrc} onError={onBgError} />
         <div className="vn-bg-bloom" />
         <div className="vn-bg-vignette" />
         <div className="vn-bg-scanlines" />
