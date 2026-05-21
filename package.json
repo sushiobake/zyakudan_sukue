@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:clean": "node scripts/dev-clean.mjs",
     "build": "tsc -b && vite build",
     "export-content": "npx --yes tsx scripts/export-content.ts",
     "lint": "eslint .",
