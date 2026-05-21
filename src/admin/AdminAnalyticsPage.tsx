@@ -123,7 +123,6 @@ export default function AdminAnalyticsPage() {
     <div className="admin-analytics">
       <header className="admin-analytics__head">
         <div>
-          <h2>プレイ履歴 / 分析</h2>
           <p className="admin-field-hint">
             本番プレイヤーのログ（Supabase）。.env.local に SUPABASE_URL と service_role 鍵を設定してください。
           </p>

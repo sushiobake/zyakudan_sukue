@@ -311,85 +311,176 @@ export default function AdminApp() {
     )
   }
 
+  const backupPanel = (
+    <section className="admin-backups admin-backups--compact" aria-label="バックアップ">
+      {backups.length === 0 ? (
+        <p className="admin-backups__line">バックアップなし（保存で自動作成）</p>
+      ) : (
+        <ul className="admin-backups__list">
+          {backups.slice(0, 3).map((entry) => (
+            <li key={entry.id} className="admin-backups__line">
+              <span className="admin-backups__date">{entry.label}</span>
+              <button
+                type="button"
+                className="admin-btn admin-btn--tiny"
+                onClick={() => restoreBackup(entry)}
+              >
+                戻す
+              </button>
+              <button
+                type="button"
+                className="admin-btn admin-btn--tiny admin-btn--danger"
+                onClick={() => handleDeleteBackup(entry)}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+
   return (
     <div className="admin-root">
       <header className="admin-header">
-        <div>
-          <h1 className="admin-title">弱者男性を救え — 管理画面</h1>
-          <p className="admin-subtitle">
-            「保存」で content.json を更新 → ゲームはリロード（F5）で反映。バックアップは日付付きで自動作成。
-          </p>
-        </div>
-        <nav className="admin-header-actions">
-          <a className="admin-btn admin-btn--ghost" href="#/">
-            ゲームへ
-          </a>
+        <h1 className="admin-title">弱者男性を救え — 管理</h1>
+
+        <nav className="admin-tabs" aria-label="管理メニュー">
           <button
             type="button"
-            className={`admin-btn ${adminTab === 'edit' ? 'admin-btn--tab-active' : ''}`}
+            className={`admin-tab ${adminTab === 'edit' ? 'admin-tab--active' : ''}`}
             onClick={() => setAdminTab('edit')}
           >
-            問題
+            問題設定
           </button>
           <button
             type="button"
-            className={`admin-btn ${adminTab === 'ranks' ? 'admin-btn--tab-active' : ''}`}
+            className={`admin-tab ${adminTab === 'ranks' ? 'admin-tab--active' : ''}`}
             onClick={() => setAdminTab('ranks')}
           >
-            称号
+            称号設定
           </button>
           <button
             type="button"
-            className={`admin-btn ${adminTab === 'analytics' ? 'admin-btn--tab-active' : ''}`}
+            className={`admin-tab ${adminTab === 'analytics' ? 'admin-tab--active' : ''}`}
             onClick={() => setAdminTab('analytics')}
           >
             プレイ履歴
           </button>
-          <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave}>
-            保存
-          </button>
-          <button type="button" className="admin-btn" onClick={handleBackupOnly}>
-            バックアップ
-          </button>
-          <button type="button" className="admin-btn" onClick={exportJson}>
-            JSON エクスポート
-          </button>
-          <button type="button" className="admin-btn" onClick={importJson}>
-            JSON インポート
-          </button>
         </nav>
 
-        {status ? <p className="admin-status">{status}</p> : null}
+        {adminTab === 'edit' ? (
+          <div className="admin-toolbar">
+            <p className="admin-toolbar__hint">
+              保存で content.json / ranks.json を更新。ゲーム確認は別タブで localhost を開いて F5。
+            </p>
+            <div className="admin-toolbar__actions">
+              <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave}>
+                保存
+              </button>
+              <button type="button" className="admin-btn" onClick={handleBackupOnly}>
+                バックアップ
+              </button>
+              <button type="button" className="admin-btn" onClick={exportJson}>
+                JSON エクスポート
+              </button>
+              <button type="button" className="admin-btn" onClick={importJson}>
+                JSON インポート
+              </button>
+            </div>
+            {backupPanel}
+          </div>
+        ) : null}
 
-        <section className="admin-backups admin-backups--compact" aria-label="バックアップ">
-          {backups.length === 0 ? (
-            <p className="admin-backups__line">バックアップなし（保存で自動作成）</p>
-          ) : (
-            <ul className="admin-backups__list">
-              {backups.slice(0, 3).map((entry) => (
-                <li key={entry.id} className="admin-backups__line">
-                  <span className="admin-backups__date">{entry.label}</span>
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn--tiny"
-                    onClick={() => restoreBackup(entry)}
-                  >
-                    戻す
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn--tiny admin-btn--danger"
-                    onClick={() => handleDeleteBackup(entry)}
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        {adminTab === 'ranks' ? (
+          <div className="admin-toolbar">
+            <p className="admin-toolbar__hint">称号は ranks.json に保存されます。保存で本番データに反映。</p>
+            <div className="admin-toolbar__actions">
+              <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave}>
+                保存
+              </button>
+              <button type="button" className="admin-btn" onClick={handleBackupOnly}>
+                バックアップ
+              </button>
+            </div>
+            {backupPanel}
+          </div>
+        ) : null}
+
+        {status ? <p className="admin-status">{status}</p> : null}
       </header>
 
+      {adminTab === 'analytics' ? (
+        <main className="admin-main admin-main--full">
+          <AdminAnalyticsPage />
+        </main>
+      ) : adminTab === 'ranks' ? (
+        <main className="admin-main admin-main--full">
+          <section className="admin-card">
+            <div className="admin-card-head">
+              <h2>章末称号（5問合計100点満点）</h2>
+              <button type="button" className="admin-btn admin-btn--small" onClick={addRank}>
+                ＋ 称号を追加
+              </button>
+            </div>
+            <p className="admin-field-hint">
+              章の5問<strong>合計点（0〜100・10点刻み）</strong>が「下限」以上のとき、その称号になります。合計の大きい称号から判定（エンディングで「あなたは〜」と表示）。
+            </p>
+            <ul className="admin-rank-list">
+              {[...ranks]
+                .sort((a, b) => a.min - b.min)
+                .map((row) => {
+                  const index = ranks.indexOf(row)
+                  return (
+                    <li key={`${row.min}-${row.title}-${index}`} className="admin-rank-row">
+                      <label className="admin-field admin-field--rank-min">
+                        <span>下限（合計）</span>
+                        <select
+                          className="admin-input--compact"
+                          value={row.min}
+                          onChange={(e) =>
+                            updateRank(index, { min: Number(e.target.value) })
+                          }
+                        >
+                          {RANK_MIN_VALUES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="admin-field admin-field--grow">
+                        <span>称号</span>
+                        <input
+                          className="admin-input--compact"
+                          value={row.title}
+                          onChange={(e) => updateRank(index, { title: e.target.value })}
+                        />
+                      </label>
+                      <label className="admin-field admin-field--grow2">
+                        <span>コメント（エンディング）</span>
+                        <input
+                          className="admin-input--compact"
+                          value={row.comment}
+                          onChange={(e) => updateRank(index, { comment: e.target.value })}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--small admin-btn--danger"
+                        onClick={() => removeRank(index)}
+                        disabled={ranks.length <= 1}
+                      >
+                        削除
+                      </button>
+                    </li>
+                  )
+                })}
+            </ul>
+          </section>
+        </main>
+      ) : (
       <div className="admin-layout">
         <aside className="admin-sidebar">
           <div className="admin-sidebar-head">
@@ -463,72 +554,7 @@ export default function AdminApp() {
         </aside>
 
         <main className="admin-main">
-          {adminTab === 'analytics' ? (
-            <AdminAnalyticsPage />
-          ) : adminTab === 'ranks' ? (
-            <section className="admin-card">
-              <div className="admin-card-head">
-                <h2>章末称号（5問合計100点満点）</h2>
-                <button type="button" className="admin-btn admin-btn--small" onClick={addRank}>
-                  ＋ 称号を追加
-                </button>
-              </div>
-              <p className="admin-field-hint">
-                章の5問<strong>合計点（0〜100・10点刻み）</strong>が「下限」以上のとき、その称号になります。合計の大きい称号から判定（エンディングで「あなたは〜」と表示）。
-              </p>
-              <ul className="admin-rank-list">
-                {[...ranks]
-                  .sort((a, b) => a.min - b.min)
-                  .map((row) => {
-                    const index = ranks.indexOf(row)
-                    return (
-                      <li key={`${row.min}-${row.title}-${index}`} className="admin-rank-row">
-                        <label className="admin-field admin-field--rank-min">
-                          <span>下限（合計）</span>
-                          <select
-                            className="admin-input--compact"
-                            value={row.min}
-                            onChange={(e) =>
-                              updateRank(index, { min: Number(e.target.value) })
-                            }
-                          >
-                            {RANK_MIN_VALUES.map((s) => (
-                              <option key={s} value={s}>
-                                {s}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="admin-field admin-field--grow">
-                          <span>称号</span>
-                          <input
-                            className="admin-input--compact"
-                            value={row.title}
-                            onChange={(e) => updateRank(index, { title: e.target.value })}
-                          />
-                        </label>
-                        <label className="admin-field admin-field--grow2">
-                          <span>コメント（エンディング）</span>
-                          <input
-                            className="admin-input--compact"
-                            value={row.comment}
-                            onChange={(e) => updateRank(index, { comment: e.target.value })}
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          className="admin-btn admin-btn--small admin-btn--danger"
-                          onClick={() => removeRank(index)}
-                          disabled={ranks.length <= 1}
-                        >
-                          削除
-                        </button>
-                      </li>
-                    )
-                  })}
-              </ul>
-            </section>
-          ) : level && question ? (
+          {level && question ? (
             <>
           <section className="admin-card admin-card--compact">
             <div className="admin-level-row">
@@ -721,6 +747,7 @@ export default function AdminApp() {
           ) : null}
         </main>
       </div>
+      )}
     </div>
   )
 }
