@@ -3,8 +3,11 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/**/*.ts": {
-      "includeFiles": "api/lib/**"
+    "api/analytics.ts": {
+      "runtime": "edge"
+    },
+    "api/admin/analytics.ts": {
+      "includeFiles": "server/**"
     }
   }
 }
