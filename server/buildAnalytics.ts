@@ -264,7 +264,8 @@ export function buildZyakudanAnalytics(allRows: ZyakudanEventRow[]) {
 
     if (row.event_type === 'answer' || row.event_type === 'chapter_abandon') {
       const qIndex = row.question_index ?? 0
-      const key = `${row.level_id ?? ''}:${row.level_index ?? ''}:${qIndex}`
+      // level_id / level_index の片方だけ入っている行を同一問にまとめる（表示は Q1-1 形式）
+      const key = formatQuestionLabel(row.level_index, qIndex)
       const q = questionMap.get(key) ?? {
         levelId: row.level_id,
         levelIndex: row.level_index,
@@ -287,6 +288,8 @@ export function buildZyakudanAnalytics(allRows: ZyakudanEventRow[]) {
         }
       }
       if (row.event_type === 'chapter_abandon') q.abandonsHere += 1
+      if (row.level_index != null) q.levelIndex = row.level_index
+      if (row.level_id) q.levelId = row.level_id
       questionMap.set(key, q)
     }
   }
