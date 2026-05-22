@@ -1,13 +1,5 @@
 {
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/analytics.ts": {
-      "runtime": "edge"
-    },
-    "api/admin/analytics.ts": {
-      "includeFiles": "server/**"
-    }
-  }
+  ]
 }
