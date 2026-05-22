@@ -1,6 +1,55 @@
+import { formatTrafficInflowLines, readTrafficSourceFromPayload } from './promoTracking'
 import type { ZyakudanEventRow } from './eventTypes'
 
 const LOW_SCORE_THRESHOLD = 10
+
+type SourceInfo = {
+  key: string
+  r: string | null
+  ct: string | null
+  label: string
+  title: string
+}
+
+function hostFromReferrer(referrer: string | null): string | null {
+  if (!referrer) return null
+  try {
+    return new URL(referrer).hostname.replace(/^www\./, '')
+  } catch {
+    return referrer.slice(0, 80)
+  }
+}
+
+function sourceFromRow(row: ZyakudanEventRow): SourceInfo {
+  const traffic = readTrafficSourceFromPayload(row.payload, row.path)
+  if (traffic.r) {
+    const formatted = formatTrafficInflowLines(traffic.r, traffic.ct)
+    return {
+      key: `${traffic.r}:${traffic.ct ?? ''}`,
+      r: traffic.r,
+      ct: traffic.ct,
+      label: formatted.cell,
+      title: formatted.title,
+    }
+  }
+  const refHost = hostFromReferrer(row.referrer)
+  if (refHost) {
+    return {
+      key: `referrer:${refHost}`,
+      r: null,
+      ct: null,
+      label: `外部参照: ${refHost}`,
+      title: row.referrer ?? refHost,
+    }
+  }
+  return {
+    key: 'direct:',
+    r: null,
+    ct: null,
+    label: '直接/不明',
+    title: 'r/ct と referrer がありません',
+  }
+}
 
 function payloadText(row: ZyakudanEventRow): string | null {
   const p = row.payload
@@ -27,6 +76,7 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
       totalScore: number | null
       rankTitle: string | null
       endReason: string | null
+      source: SourceInfo
       answers: Array<{
         questionIndex: number
         optionIndex: number | null
@@ -64,6 +114,53 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
     }
   >()
 
+  const sourceMap = new Map<
+    string,
+    {
+      key: string
+      r: string | null
+      ct: string | null
+      label: string
+      title: string
+      titleVisits: number
+      plays: number
+      visitors: Set<string>
+      starts: number
+      finishes: number
+      abandons: number
+    }
+  >()
+
+  function bumpSource(source: SourceInfo, patch: {
+    titleVisit?: boolean
+    play?: boolean
+    visitorId?: string | null
+    start?: boolean
+    finish?: boolean
+    abandon?: boolean
+  }) {
+    const current = sourceMap.get(source.key) ?? {
+      key: source.key,
+      r: source.r,
+      ct: source.ct,
+      label: source.label,
+      title: source.title,
+      titleVisits: 0,
+      plays: 0,
+      visitors: new Set<string>(),
+      starts: 0,
+      finishes: 0,
+      abandons: 0,
+    }
+    if (patch.titleVisit) current.titleVisits += 1
+    if (patch.play) current.plays += 1
+    if (patch.visitorId) current.visitors.add(patch.visitorId)
+    if (patch.start) current.starts += 1
+    if (patch.finish) current.finishes += 1
+    if (patch.abandon) current.abandons += 1
+    sourceMap.set(source.key, current)
+  }
+
   for (const row of rows) {
     if (row.visitor_id) visitors.add(row.visitor_id)
     const day = row.created_at.slice(0, 10)
@@ -86,6 +183,11 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
     if (row.event_type === 'chapter_abandon') daily.abandons += 1
     dailyMap.set(day, daily)
 
+    const rowSource = sourceFromRow(row)
+    if (row.event_type === 'title_visit') {
+      bumpSource(rowSource, { titleVisit: true, visitorId: row.visitor_id })
+    }
+
     if (row.play_id) {
       const p = plays.get(row.play_id) ?? {
         playId: row.play_id,
@@ -101,14 +203,21 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
         totalScore: null,
         rankTitle: null,
         endReason: null,
+        source: rowSource,
         answers: [],
       }
       p.firstAt = row.created_at < p.firstAt ? row.created_at : p.firstAt
       p.lastAt = row.created_at > p.lastAt ? row.created_at : p.lastAt
       p.eventCount += 1
+      if (p.source.key === 'direct:' && rowSource.key !== 'direct:') p.source = rowSource
       if (!p.visitorId && row.visitor_id) p.visitorId = row.visitor_id
       if (row.level_id) p.levelId = row.level_id
       if (row.event_type === 'chapter_start') {
+        bumpSource(p.source, {
+          play: true,
+          visitorId: p.visitorId,
+          start: true,
+        })
         const title = payloadText(row)
         if (title) p.levelTitle = title.replace(/^章:\s*/, '')
         const pl = row.payload as { levelTitle?: string }
@@ -131,9 +240,11 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
         p.totalScore = row.total_score
         p.rankTitle = row.rank_title
         p.endReason = row.end_reason
+        bumpSource(p.source, { finish: true })
       }
       if (row.event_type === 'chapter_abandon') {
         p.endReason = row.end_reason ?? 'abandon'
+        bumpSource(p.source, { abandon: true })
       }
       plays.set(row.play_id, p)
     }
@@ -195,6 +306,24 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
 
   const playRows = [...plays.values()].sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1))
 
+  const sources = [...sourceMap.values()]
+    .map((source) => ({
+      key: source.key,
+      r: source.r,
+      ct: source.ct,
+      label: source.label,
+      title: source.title,
+      titleVisits: source.titleVisits,
+      plays: source.plays,
+      visitors: source.visitors.size,
+      starts: source.starts,
+      finishes: source.finishes,
+      abandons: source.abandons,
+      finishRate:
+        source.starts > 0 ? Math.round((source.finishes / source.starts) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.titleVisits + b.starts - (a.titleVisits + a.starts))
+
   const daily = [...dailyMap.values()]
     .map((d) => ({
       day: d.day,
@@ -232,8 +361,25 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
   return {
     summary,
     daily,
+    sources,
     questions,
-    plays: playRows.slice(0, 500),
+    plays: playRows.slice(0, 500).map((p) => ({
+      playId: p.playId,
+      visitorId: p.visitorId,
+      levelId: p.levelId,
+      levelTitle: p.levelTitle,
+      firstAt: p.firstAt,
+      lastAt: p.lastAt,
+      answerCount: p.answerCount,
+      reachedQuestion: p.reachedQuestion,
+      finished: p.finished,
+      totalScore: p.totalScore,
+      rankTitle: p.rankTitle,
+      endReason: p.endReason,
+      sourceLabel: p.source.label,
+      sourceTitle: p.source.title,
+      answers: p.answers,
+    })),
     events: rows.slice(0, 300),
   }
 }

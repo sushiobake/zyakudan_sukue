@@ -13,11 +13,17 @@ export async function insertAnalyticsEvent(
   const headers = supabaseHeaders()
   if (!url || !headers) return { ok: false, skipped: true }
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(eventToRow(event, meta)),
-  })
+  let res: Response
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(eventToRow(event, meta)),
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { ok: false, status: 500, body: `fetch failed: ${message}` }
+  }
 
   if (!res.ok) {
     const body = await res.text().catch(() => '')
@@ -67,8 +73,14 @@ export async function fetchAnalyticsRows(
   const headers = supabaseHeaders()
   if (!base || !headers) return { ok: false, skipped: true }
 
-  const tableUrl = base
-  const url = new URL(tableUrl)
+  let url: URL
+  try {
+    url = new URL(base)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { ok: false, status: 500, body: `Invalid SUPABASE_URL: ${message}` }
+  }
+
   const fromIso = rangeToFromIso(range)
   url.searchParams.set('select', SELECT_COLUMNS)
   url.searchParams.set('order', 'created_at.desc')
@@ -79,10 +91,21 @@ export async function fetchAnalyticsRows(
   delete readHeaders['Content-Type']
   delete readHeaders.Prefer
 
-  const res = await fetch(url, { method: 'GET', headers: readHeaders, cache: 'no-store' })
+  let res: Response
+  try {
+    res = await fetch(url, { method: 'GET', headers: readHeaders, cache: 'no-store' })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { ok: false, status: 500, body: `fetch failed: ${message}` }
+  }
+
   const text = await res.text()
   if (!res.ok) return { ok: false, status: res.status, body: text.slice(0, 700) }
-  return { ok: true, rows: JSON.parse(text) as ZyakudanEventRow[] }
+  try {
+    return { ok: true, rows: JSON.parse(text) as ZyakudanEventRow[] }
+  } catch {
+    return { ok: false, status: 500, body: 'Invalid JSON from Supabase' }
+  }
 }
 
 export type { AnalyticsEventInput }
