@@ -4,7 +4,11 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { buildZyakudanAnalytics } from './server/buildAnalytics'
 import { adminPassword } from './server/env'
-import { fetchAnalyticsRows, insertAnalyticsEvent } from './server/supabaseRest'
+import {
+  deleteEventsByPlayId,
+  fetchAnalyticsRows,
+  insertAnalyticsEvent,
+} from './server/supabaseRest'
 
 /** 管理画面の「保存」→ public/content.json / ranks.json を即更新（開発サーバーのみ） */
 function saveContentApi(saveToken: string | undefined): Plugin {
@@ -105,7 +109,7 @@ function analyticsDevApi(): Plugin {
       })
 
       server.middlewares.use('/api/admin/analytics', async (req, res, next) => {
-        if (req.method !== 'GET') {
+        if (req.method !== 'GET' && req.method !== 'DELETE') {
           next()
           return
         }
@@ -121,6 +125,26 @@ function analyticsDevApi(): Plugin {
           }
         }
         const url = new URL(req.url ?? '/', 'http://local')
+
+        if (req.method === 'DELETE') {
+          const playId = url.searchParams.get('playId') ?? ''
+          const deleted = await deleteEventsByPlayId(playId)
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'application/json')
+          if (!deleted.ok) {
+            res.end(
+              JSON.stringify({
+                success: false,
+                error: deleted.skipped ? 'SupabaseNotConfigured' : 'SupabaseDeleteFailed',
+                message: deleted.body,
+              }),
+            )
+            return
+          }
+          res.end(JSON.stringify({ success: true, playId: playId.trim() }))
+          return
+        }
+
         const range = url.searchParams.get('range') ?? '7d'
         const limit = Math.min(10000, Math.max(100, Number(url.searchParams.get('limit') ?? 5000)))
         const fetched = await fetchAnalyticsRows(range, limit)
@@ -152,6 +176,17 @@ function analyticsDevApi(): Plugin {
 
 const DEFAULT_SITE_URL = 'https://zyakudan-sukue.vercel.app'
 
+/** ローカル dev では区別しやすい favicon */
+function localDevFavicon(): Plugin {
+  return {
+    name: 'local-dev-favicon',
+    apply: 'serve',
+    transformIndexHtml(html) {
+      return html.replace(/\/title_icon\.png/g, '/title_icon_local.png')
+    },
+  }
+}
+
 /** OGP / Twitter カード用に公開URLを絶対パスへ差し替え */
 function absoluteOgMeta(siteUrl: string): Plugin {
   return {
@@ -180,6 +215,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      localDevFavicon(),
       saveContentApi(env.SAVE_CONTENT_TOKEN),
       analyticsDevApi(),
       absoluteOgMeta(siteUrl),

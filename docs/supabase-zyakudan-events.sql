@@ -30,4 +30,4 @@ create index if not exists zyakudan_events_play_id_idx
   on public.zyakudan_events (play_id);
 
 grant usage on schema public to service_role;
-grant insert, select on table public.zyakudan_events to service_role;
+grant insert, select, delete on table public.zyakudan_events to service_role;

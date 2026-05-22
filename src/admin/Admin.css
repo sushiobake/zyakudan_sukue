@@ -791,3 +791,151 @@
   color: rgba(50, 40, 30, 0.65);
   font-size: 0.75rem;
 }
+
+.admin-card--compact {
+  padding: 12px 14px;
+}
+
+.admin-card__title-sm {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.admin-analytics__table--dense th,
+.admin-analytics__table--dense td {
+  padding: 4px 8px;
+  font-size: 0.76rem;
+}
+
+.admin-analytics__nowrap {
+  white-space: nowrap;
+}
+
+.admin-analytics__choice-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.admin-analytics__choice-pill {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(80, 60, 40, 0.08);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-analytics__actions {
+  white-space: nowrap;
+}
+
+.admin-btn--xs {
+  padding: 2px 8px;
+  font-size: 0.72rem;
+}
+
+.admin-btn--danger {
+  color: #7a2828;
+  border-color: rgba(140, 50, 50, 0.35);
+}
+
+.admin-btn--danger:hover {
+  background: rgba(180, 60, 60, 0.1);
+}
+
+/* ----- 流入元 / 配布 URL ----- */
+.admin-promo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.admin-promo__builder-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.admin-promo__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-promo__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.admin-promo__url-box {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(80, 60, 40, 0.14);
+  background: rgba(255, 252, 245, 0.95);
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.admin-promo__template {
+  min-height: 8rem;
+  line-height: 1.5;
+}
+
+.admin-promo__history {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(80, 60, 40, 0.1);
+}
+
+.admin-promo__history ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-promo__history-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid rgba(80, 60, 40, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 252, 245, 0.8);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+
+.admin-promo__history-btn:hover {
+  background: rgba(232, 120, 154, 0.08);
+}
+
+.admin-promo__history-btn code {
+  font-size: 0.72rem;
+  color: rgba(50, 40, 30, 0.75);
+  word-break: break-all;
+}
+
+.admin-promo__section-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.admin-promo__section-head h3 {
+  margin: 0;
+}

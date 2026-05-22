@@ -25,9 +25,10 @@ import type {
   ScoreRank,
 } from '../types'
 import AdminAnalyticsPage from './AdminAnalyticsPage'
+import AdminPromoPage from './AdminPromoPage'
 import './Admin.css'
 
-type AdminTab = 'edit' | 'ranks' | 'analytics'
+type AdminTab = 'edit' | 'ranks' | 'analytics' | 'promo'
 
 function cloneRanks(ranks: ScoreRank[]): ScoreRank[] {
   return structuredClone(ranks)
@@ -368,6 +369,13 @@ export default function AdminApp() {
           >
             プレイ履歴
           </button>
+          <button
+            type="button"
+            className={`admin-tab ${adminTab === 'promo' ? 'admin-tab--active' : ''}`}
+            onClick={() => setAdminTab('promo')}
+          >
+            流入元 / URL
+          </button>
         </nav>
 
         {adminTab === 'edit' ? (
@@ -414,6 +422,10 @@ export default function AdminApp() {
       {adminTab === 'analytics' ? (
         <main className="admin-main admin-main--full">
           <AdminAnalyticsPage />
+        </main>
+      ) : adminTab === 'promo' ? (
+        <main className="admin-main admin-main--full">
+          <AdminPromoPage />
         </main>
       ) : adminTab === 'ranks' ? (
         <main className="admin-main admin-main--full">

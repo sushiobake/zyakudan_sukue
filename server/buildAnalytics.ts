@@ -1,3 +1,4 @@
+import { filterProductionAnalyticsRows } from './localTraffic'
 import { formatTrafficInflowLines, readTrafficSourceFromPayload } from './promoTracking'
 import type { ZyakudanEventRow } from './eventTypes'
 
@@ -58,7 +59,16 @@ function payloadText(row: ZyakudanEventRow): string | null {
   return typeof t === 'string' && t.trim() ? t.slice(0, 120) : null
 }
 
-export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
+export function formatQuestionLabel(
+  levelIndex: number | null | undefined,
+  questionIndex: number,
+): string {
+  const ch = (levelIndex ?? 0) + 1
+  return `Q${ch}-${questionIndex}`
+}
+
+export function buildZyakudanAnalytics(allRows: ZyakudanEventRow[]) {
+  const { rows, excludedLocal } = filterProductionAnalyticsRows(allRows)
   const visitors = new Set<string>()
   const plays = new Map<
     string,
@@ -66,6 +76,7 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
       playId: string
       visitorId: string | null
       levelId: string | null
+      levelIndex: number | null
       levelTitle: string | null
       firstAt: string
       lastAt: string
@@ -193,6 +204,7 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
         playId: row.play_id,
         visitorId: row.visitor_id,
         levelId: row.level_id,
+        levelIndex: row.level_index,
         levelTitle: null,
         firstAt: row.created_at,
         lastAt: row.created_at,
@@ -212,6 +224,7 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
       if (p.source.key === 'direct:' && rowSource.key !== 'direct:') p.source = rowSource
       if (!p.visitorId && row.visitor_id) p.visitorId = row.visitor_id
       if (row.level_id) p.levelId = row.level_id
+      if (row.level_index != null) p.levelIndex = row.level_index
       if (row.event_type === 'chapter_start') {
         bumpSource(p.source, {
           play: true,
@@ -360,6 +373,7 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
 
   return {
     summary,
+    excludedLocal,
     daily,
     sources,
     questions,
@@ -367,6 +381,7 @@ export function buildZyakudanAnalytics(rows: ZyakudanEventRow[]) {
       playId: p.playId,
       visitorId: p.visitorId,
       levelId: p.levelId,
+      levelIndex: p.levelIndex,
       levelTitle: p.levelTitle,
       firstAt: p.firstAt,
       lastAt: p.lastAt,

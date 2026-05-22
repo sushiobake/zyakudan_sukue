@@ -108,4 +108,43 @@ export async function fetchAnalyticsRows(
   }
 }
 
+/** play_id に紐づくイベント行を削除（管理画面のテストプレイ消去用） */
+export async function deleteEventsByPlayId(
+  playId: string,
+): Promise<{ ok: boolean; status?: number; body?: string; skipped?: boolean }> {
+  const id = playId.trim()
+  if (!id) return { ok: false, status: 400, body: 'MissingPlayId' }
+
+  const base = supabaseRestTableUrl()
+  const headers = supabaseHeaders()
+  if (!base || !headers) return { ok: false, skipped: true }
+
+  let url: URL
+  try {
+    url = new URL(base)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { ok: false, status: 500, body: `Invalid SUPABASE_URL: ${message}` }
+  }
+
+  url.searchParams.set('play_id', `eq.${id}`)
+
+  const delHeaders: Record<string, string> = { ...headers, Prefer: 'return=minimal' }
+  delete delHeaders['Content-Type']
+
+  let res: Response
+  try {
+    res = await fetch(url, { method: 'DELETE', headers: delHeaders })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { ok: false, status: 500, body: `fetch failed: ${message}` }
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    return { ok: false, status: res.status, body: body.slice(0, 700) }
+  }
+  return { ok: true }
+}
+
 export type { AnalyticsEventInput }

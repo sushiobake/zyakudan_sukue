@@ -1,6 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
+import { formatQuestionLabel } from './analyticsFormat'
 
 type RangeKey = 'today' | '7d' | '30d' | 'all'
+
+type SourceRow = {
+  key: string
+  r: string | null
+  ct: string | null
+  label: string
+  title: string
+  titleVisits: number
+  plays: number
+  visitors: number
+  starts: number
+  finishes: number
+  abandons: number
+  finishRate: number
+}
 
 type AnalyticsResponse = {
   success: boolean
@@ -8,6 +24,7 @@ type AnalyticsResponse = {
   message?: string
   range?: string
   loaded?: number
+  excludedLocal?: number
   generatedAt?: string
   summary?: {
     events: number
@@ -20,17 +37,7 @@ type AnalyticsResponse = {
     answers: number
     finishRate: number
   }
-  daily?: Array<{
-    day: string
-    events: number
-    visitors: number
-    plays: number
-    titleVisits: number
-    starts: number
-    finishes: number
-    abandons: number
-    finishRate: number
-  }>
+  sources?: SourceRow[]
   questions?: Array<{
     levelId: string | null
     levelIndex: number | null
@@ -45,6 +52,7 @@ type AnalyticsResponse = {
     playId: string
     visitorId: string | null
     levelId: string | null
+    levelIndex: number | null
     levelTitle: string | null
     firstAt: string
     lastAt: string
@@ -54,6 +62,8 @@ type AnalyticsResponse = {
     totalScore: number | null
     rankTitle: string | null
     endReason: string | null
+    sourceLabel?: string | null
+    sourceTitle?: string | null
     answers: Array<{
       questionIndex: number
       optionIndex: number | null
@@ -81,10 +91,15 @@ function formatDt(iso: string): string {
   }
 }
 
+function optionNum(optionIndex: number | null): string {
+  return optionIndex != null ? String(optionIndex + 1) : '—'
+}
+
 export default function AdminAnalyticsPage() {
   const [range, setRange] = useState<RangeKey>('7d')
   const [adminPassword, setAdminPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [payload, setPayload] = useState<AnalyticsResponse | null>(null)
 
   const load = useCallback(async () => {
@@ -108,25 +123,49 @@ export default function AdminAnalyticsPage() {
     }
   }, [adminPassword, range])
 
+  const deletePlay = useCallback(
+    async (playId: string) => {
+      if (!window.confirm('このプレイのログをすべて削除します。よろしいですか？')) return
+      setDeletingId(playId)
+      try {
+        const headers: Record<string, string> = {}
+        if (adminPassword) headers['x-zyakudan-admin-password'] = adminPassword
+        const res = await fetch(
+          `/api/admin/analytics?playId=${encodeURIComponent(playId)}`,
+          { method: 'DELETE', headers },
+        )
+        const json = (await res.json()) as { success?: boolean; message?: string }
+        if (!json.success) {
+          window.alert(json.message ?? '削除に失敗しました')
+          return
+        }
+        await load()
+      } catch (e) {
+        window.alert(e instanceof Error ? e.message : String(e))
+      } finally {
+        setDeletingId(null)
+      }
+    },
+    [adminPassword, load],
+  )
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void load()
     }, 0)
     return () => window.clearTimeout(timer)
-    // フィルタ変更時の再取得。setTimeout で lint の同期 setState 警告を避ける
     // eslint-disable-next-line react-hooks/exhaustive-deps -- load は adminPassword/range を内包
   }, [range, adminPassword])
 
   const summary = payload?.summary
+  const sources = payload?.sources ?? []
 
   return (
     <div className="admin-analytics">
       <header className="admin-analytics__head">
-        <div>
-          <p className="admin-field-hint">
-            本番プレイヤーのログ（Supabase）。.env.local に SUPABASE_URL と service_role 鍵を設定してください。
-          </p>
-        </div>
+        <p className="admin-field-hint">
+          本番プレイヤーのログ（Supabase）。localhost のテストは集計から除外しています。
+        </p>
         <div className="admin-analytics__toolbar">
           <select
             className="admin-input--compact"
@@ -145,7 +184,12 @@ export default function AdminAnalyticsPage() {
             onChange={(e) => setAdminPassword(e.target.value)}
             placeholder="管理パスワード（ローカルは未設定で可）"
           />
-          <button type="button" className="admin-btn admin-btn--primary" onClick={() => void load()} disabled={loading}>
+          <button
+            type="button"
+            className="admin-btn admin-btn--primary"
+            onClick={() => void load()}
+            disabled={loading}
+          >
             {loading ? '読込中…' : '再読込'}
           </button>
           {payload?.success ? (
@@ -156,7 +200,7 @@ export default function AdminAnalyticsPage() {
                 downloadJson(`zyakudan-analytics-${range}-${Date.now()}.json`, payload)
               }
             >
-              JSON エクスポート
+              JSON
             </button>
           ) : null}
         </div>
@@ -180,7 +224,7 @@ export default function AdminAnalyticsPage() {
               <strong>{summary.visitors}</strong>
             </div>
             <div className="admin-analytics__stat">
-              <span>タイトル訪問</span>
+              <span>タイトル</span>
               <strong>{summary.titleVisits}</strong>
             </div>
             <div className="admin-analytics__stat">
@@ -188,11 +232,11 @@ export default function AdminAnalyticsPage() {
               <strong>{summary.starts}</strong>
             </div>
             <div className="admin-analytics__stat">
-              <span>章完了</span>
+              <span>完了</span>
               <strong>{summary.finishes}</strong>
             </div>
             <div className="admin-analytics__stat">
-              <span>途中離脱</span>
+              <span>離脱</span>
               <strong>{summary.abandons}</strong>
             </div>
             <div className="admin-analytics__stat">
@@ -201,33 +245,97 @@ export default function AdminAnalyticsPage() {
             </div>
           </section>
 
-          <section className="admin-card">
-            <h3>問題別（平均点・低得点で多い選択肢）</h3>
+          {(payload?.excludedLocal ?? 0) > 0 ? (
+            <p className="admin-field-hint">
+              localhost 由来 {payload?.excludedLocal} 件は集計・一覧から除外済み
+            </p>
+          ) : null}
+
+          <section className="admin-card admin-card--compact">
+            <h3 className="admin-card__title-sm">流入元集計</h3>
+            {sources.length === 0 ? (
+              <p className="admin-field-hint">
+                <code>?r=</code> 付き URL からのアクセスがまだありません。
+              </p>
+            ) : (
+              <div className="admin-analytics__table-wrap">
+                <table className="admin-analytics__table admin-analytics__table--dense">
+                  <thead>
+                    <tr>
+                      <th>流入</th>
+                      <th>r</th>
+                      <th>ct</th>
+                      <th>訪問</th>
+                      <th>開始</th>
+                      <th>完了</th>
+                      <th>率</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sources.map((row) => (
+                      <tr key={row.key} title={row.title}>
+                        <td>{row.label}</td>
+                        <td>{row.r ?? '—'}</td>
+                        <td>{row.ct ?? '—'}</td>
+                        <td>{row.titleVisits}</td>
+                        <td>{row.starts}</td>
+                        <td>{row.finishes}</td>
+                        <td>{row.finishRate}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section className="admin-card admin-card--compact">
+            <h3 className="admin-card__title-sm">プレイ一覧</h3>
             <div className="admin-analytics__table-wrap">
-              <table className="admin-analytics__table">
+              <table className="admin-analytics__table admin-analytics__table--dense admin-analytics__table--plays">
                 <thead>
                   <tr>
+                    <th>日時</th>
+                    <th>流入</th>
                     <th>章</th>
-                    <th>問</th>
-                    <th>回答数</th>
-                    <th>平均点</th>
-                    <th>低得点↑選択</th>
-                    <th>離脱</th>
+                    <th>点</th>
+                    <th>完</th>
+                    <th>選択</th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>
-                  {(payload?.questions ?? []).map((q) => (
-                    <tr key={`${q.levelId}-${q.questionIndex}`}>
-                      <td>{q.levelId ?? '—'}</td>
-                      <td>{q.questionIndex}</td>
-                      <td>{q.answers}</td>
-                      <td>{q.avgScore ?? '—'}</td>
+                  {(payload?.plays ?? []).map((play) => (
+                    <tr key={play.playId} title={play.sourceTitle ?? play.playId}>
+                      <td className="admin-analytics__nowrap">{formatDt(play.lastAt)}</td>
+                      <td>{play.sourceLabel ?? '—'}</td>
+                      <td>{play.levelTitle ?? play.levelId ?? '—'}</td>
+                      <td>{play.totalScore ?? '—'}</td>
+                      <td>{play.finished ? '○' : `×${play.reachedQuestion}`}</td>
                       <td>
-                        {q.topLowOption
-                          ? `#${q.topLowOption.optionIndex + 1}（${q.topLowOption.count}回）`
-                          : '—'}
+                        <span className="admin-analytics__choice-pills">
+                          {play.answers.map((a) => (
+                            <span
+                              key={`${play.playId}-${a.questionIndex}`}
+                              className="admin-analytics__choice-pill"
+                              title={`${formatQuestionLabel(play.levelIndex, a.questionIndex)} → 選択${optionNum(a.optionIndex)}`}
+                            >
+                              {formatQuestionLabel(play.levelIndex, a.questionIndex)}:
+                              {optionNum(a.optionIndex)}
+                            </span>
+                          ))}
+                        </span>
                       </td>
-                      <td>{q.abandonsHere}</td>
+                      <td className="admin-analytics__actions">
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--danger admin-btn--xs"
+                          disabled={deletingId === play.playId}
+                          onClick={() => void deletePlay(play.playId)}
+                        >
+                          {deletingId === play.playId ? '…' : '削除'}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -235,41 +343,31 @@ export default function AdminAnalyticsPage() {
             </div>
           </section>
 
-          <section className="admin-card">
-            <h3>プレイ一覧（新しい順・最大500件）</h3>
+          <section className="admin-card admin-card--compact">
+            <h3 className="admin-card__title-sm">問題別</h3>
             <div className="admin-analytics__table-wrap">
-              <table className="admin-analytics__table admin-analytics__table--plays">
+              <table className="admin-analytics__table admin-analytics__table--dense">
                 <thead>
                   <tr>
-                    <th>日時</th>
-                    <th>章</th>
-                    <th>合計</th>
-                    <th>称号</th>
-                    <th>完了</th>
-                    <th>各問</th>
+                    <th>問</th>
+                    <th>n</th>
+                    <th>均</th>
+                    <th>低↑</th>
+                    <th>離</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(payload?.plays ?? []).map((play) => (
-                    <tr key={play.playId}>
-                      <td>{formatDt(play.lastAt)}</td>
-                      <td>{play.levelTitle ?? play.levelId ?? '—'}</td>
-                      <td>{play.totalScore ?? '—'}</td>
-                      <td>{play.rankTitle ?? '—'}</td>
-                      <td>{play.finished ? '○' : `×（${play.reachedQuestion}問まで）`}</td>
+                  {(payload?.questions ?? []).map((q) => (
+                    <tr key={`${q.levelId}-${q.questionIndex}`}>
+                      <td>{formatQuestionLabel(q.levelIndex, q.questionIndex)}</td>
+                      <td>{q.answers}</td>
+                      <td>{q.avgScore ?? '—'}</td>
                       <td>
-                        <ul className="admin-analytics__answers">
-                          {play.answers.map((a) => (
-                            <li key={`${play.playId}-q${a.questionIndex}`}>
-                              Q{a.questionIndex}: {a.score ?? '—'}点
-                              {a.optionIndex != null ? ` / 選択${a.optionIndex + 1}` : ''}
-                              {a.choiceText ? (
-                                <span className="admin-analytics__choice-snippet"> {a.choiceText}</span>
-                              ) : null}
-                            </li>
-                          ))}
-                        </ul>
+                        {q.topLowOption
+                          ? `${q.topLowOption.optionIndex + 1}(${q.topLowOption.count})`
+                          : '—'}
                       </td>
+                      <td>{q.abandonsHere}</td>
                     </tr>
                   ))}
                 </tbody>

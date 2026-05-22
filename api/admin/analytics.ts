@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { buildZyakudanAnalytics } from '../../server/buildAnalytics'
 import { adminPassword } from '../../server/env'
-import { fetchAnalyticsRows } from '../../server/supabaseRest'
+import { deleteEventsByPlayId, fetchAnalyticsRows } from '../../server/supabaseRest'
 
 function assertAdmin(req: VercelRequest, res: VercelResponse): boolean {
   const password = adminPassword()
@@ -31,11 +31,41 @@ function assertAdmin(req: VercelRequest, res: VercelResponse): boolean {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    if (!assertAdmin(req, res)) return
+
+    if (req.method === 'DELETE') {
+      const playId =
+        typeof req.query.playId === 'string'
+          ? req.query.playId
+          : typeof req.body === 'object' && req.body && 'playId' in req.body
+            ? String((req.body as { playId: unknown }).playId)
+            : ''
+      const deleted = await deleteEventsByPlayId(playId)
+      if (deleted.skipped) {
+        res.status(200).json({
+          success: false,
+          error: 'SupabaseNotConfigured',
+          message: 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY を設定してください。',
+        })
+        return
+      }
+      if (!deleted.ok) {
+        res.status(200).json({
+          success: false,
+          error: 'SupabaseDeleteFailed',
+          status: deleted.status,
+          message: deleted.body,
+        })
+        return
+      }
+      res.status(200).json({ success: true, playId: playId.trim() })
+      return
+    }
+
     if (req.method !== 'GET') {
       res.status(405).json({ success: false, error: 'MethodNotAllowed' })
       return
     }
-    if (!assertAdmin(req, res)) return
 
     const range = typeof req.query.range === 'string' ? req.query.range : '7d'
     const limitRaw = Number(req.query.limit ?? 5000)
