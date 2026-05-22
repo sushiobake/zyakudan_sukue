@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { readJsonBody } from '../server/readJsonBody'
-import { insertAnalyticsEvent } from '../server/supabaseRest'
+import { insertAnalyticsEvent } from './lib/insertEvent'
+import { readJsonBody } from './lib/readJsonBody'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -16,7 +16,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
 
     if (result.skipped) {
-      res.status(200).json({ success: false, skipped: true })
+      res.status(200).json({
+        success: false,
+        skipped: true,
+        hint: 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing on Vercel',
+      })
       return
     }
     if (!result.ok) {
