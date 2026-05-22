@@ -150,17 +150,20 @@ function analyticsDevApi(): Plugin {
   }
 }
 
-/** OGP 画像を絶対URLに差し替え（VITE_SITE_URL 設定時） */
+const DEFAULT_SITE_URL = 'https://zyakudan-sukue.vercel.app'
+
+/** OGP / Twitter カード用に公開URLを絶対パスへ差し替え */
 function absoluteOgMeta(siteUrl: string): Plugin {
   return {
     name: 'absolute-og-meta',
     transformIndexHtml(html) {
-      if (!siteUrl) return html
-      const base = siteUrl.replace(/\/$/, '')
+      const base = (siteUrl || DEFAULT_SITE_URL).replace(/\/$/, '')
       const imageUrl = `${base}/og-image.png`
       return html
         .replace(/content="\/og-image\.png"/g, `content="${imageUrl}"`)
         .replace(/content='\/og-image\.png'/g, `content='${imageUrl}'`)
+        .replace(/content="__SITE_URL__\/"/g, `content="${base}/"`)
+        .replace(/content='__SITE_URL__\/'/g, `content='${base}/'`)
     },
   }
 }
@@ -172,7 +175,7 @@ export default defineConfig(({ mode }) => {
   for (const [key, value] of Object.entries(env)) {
     if (process.env[key] === undefined) process.env[key] = value
   }
-  const siteUrl = (env.VITE_SITE_URL || '').trim().replace(/\/$/, '')
+  const siteUrl = (env.VITE_SITE_URL || '').trim().replace(/\/$/, '') || DEFAULT_SITE_URL
 
   return {
     plugins: [
