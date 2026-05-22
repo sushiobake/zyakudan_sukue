@@ -22,7 +22,15 @@ export type AnalyticsPayload = {
   payload?: Record<string, unknown>
 }
 
+import {
+  TRAFFIC_STORAGE_KEY,
+  readTrafficFromWindowSearch,
+  trafficHasSignal,
+  type TrafficSource,
+} from './promoTracking'
+
 const VISITOR_STORAGE_KEY = 'zyakudan.visitorId.v1'
+const TRAFFIC_PARAM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
 
 function makeId(prefix: string): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -48,14 +56,63 @@ export function createAnalyticsPlayId(): string {
   return makeId('play')
 }
 
+/** 初回 URL の r/ct を sessionStorage に保持（ハッシュ遷移後も追跡） */
+function getEffectiveTraffic(): TrafficSource {
+  const fromUrl = readTrafficFromWindowSearch(window.location.search)
+  if (trafficHasSignal(fromUrl)) {
+    try {
+      window.sessionStorage.setItem(TRAFFIC_STORAGE_KEY, JSON.stringify(fromUrl))
+    } catch {
+      // ignore
+    }
+    return fromUrl
+  }
+
+  try {
+    const raw = window.sessionStorage.getItem(TRAFFIC_STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw) as TrafficSource
+      if (parsed && typeof parsed === 'object') return parsed
+    }
+  } catch {
+    // ignore
+  }
+
+  return fromUrl
+}
+
 function withPageContext(payload: AnalyticsPayload): AnalyticsPayload {
   if (typeof window === 'undefined') return payload
+
+  const trafficRaw = getEffectiveTraffic()
+  const utmFromUrl: Record<string, string> = {}
+  for (const key of TRAFFIC_PARAM_KEYS) {
+    const value = new URLSearchParams(window.location.search).get(key)?.trim().slice(0, 128)
+    if (value) utmFromUrl[key.replace(/^utm_/, '')] = value
+  }
+  const traffic = trafficHasSignal(trafficRaw)
+    ? {
+        ...(trafficRaw.r ? { r: trafficRaw.r } : {}),
+        ...(trafficRaw.ct ? { ct: trafficRaw.ct } : {}),
+        ...(trafficRaw.utm && Object.keys(trafficRaw.utm).length > 0
+          ? { utm: trafficRaw.utm }
+          : Object.keys(utmFromUrl).length > 0
+            ? { utm: utmFromUrl }
+            : {}),
+      }
+    : null
+
+  const nextPayload = {
+    ...(traffic ? { traffic } : {}),
+    ...(payload.payload ?? {}),
+  }
+
   return {
     ...payload,
     visitorId: payload.visitorId || getAnalyticsVisitorId(),
     path: payload.path || `${window.location.pathname}${window.location.search}${window.location.hash}`,
     referrer: payload.referrer === undefined ? document.referrer || null : payload.referrer,
-    payload: payload.payload ?? {},
+    payload: nextPayload,
   }
 }
 
