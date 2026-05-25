@@ -633,7 +633,11 @@
   font-size: 0.88em;
 }
 
-/* 選択肢4列 */
+/* 選択肢4列（固定スロット A〜D） */
+.admin-options-grid__hint {
+  margin: 8px 0 0;
+}
+
 .admin-options-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -649,12 +653,37 @@
   background: #fffaf6;
 }
 
+.admin-option-col--dragging {
+  opacity: 0.55;
+  border-color: #e8789a;
+}
+
+.admin-option-col__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
 .admin-option-col__label {
-  margin: 0 0 6px;
-  font-size: 0.72rem;
-  font-weight: 700;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
   color: #c73e6e;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.admin-option-col__drag {
+  font-size: 0.85rem;
+  color: rgba(61, 52, 44, 0.35);
+  user-select: none;
+  cursor: grab;
+}
+
+.admin-option-col__drag:active {
+  cursor: grabbing;
 }
 
 .admin-option-col .admin-field span {

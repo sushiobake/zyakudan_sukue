@@ -108,8 +108,9 @@
   min-height: 38px;
 }
 
+/* 一時非表示（再表示するときは display: inline-flex に戻す） */
 .tps-studio {
-  display: inline-flex;
+  display: none;
   align-items: center;
   gap: 10px;
   color: inherit;

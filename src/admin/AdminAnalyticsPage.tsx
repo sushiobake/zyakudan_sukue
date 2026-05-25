@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { optionIndexToLetter } from '../data/optionLetters'
 import { formatQuestionLabel } from './analyticsFormat'
+import { getHiddenPlayIds, hidePlayId } from './hiddenPlays'
 
 type RangeKey = 'today' | '7d' | '30d' | 'all'
 
@@ -91,15 +93,23 @@ function formatDt(iso: string): string {
   }
 }
 
-function optionNum(optionIndex: number | null): string {
-  return optionIndex != null ? String(optionIndex + 1) : '—'
+function formatChoicePill(
+  levelIndex: number | null | undefined,
+  answer: { questionIndex: number; optionIndex: number | null; score: number | null },
+): string {
+  const label = formatQuestionLabel(levelIndex, answer.questionIndex)
+  const opt = optionIndexToLetter(answer.optionIndex)
+  const score =
+    answer.score != null && Number.isFinite(answer.score) ? `(${answer.score})` : ''
+  return `${label}:${opt}${score}`
 }
 
 export default function AdminAnalyticsPage() {
   const [range, setRange] = useState<RangeKey>('7d')
   const [adminPassword, setAdminPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [hidingId, setHidingId] = useState<string | null>(null)
+  const [hiddenRevision, setHiddenRevision] = useState(0)
   const [payload, setPayload] = useState<AnalyticsResponse | null>(null)
 
   const load = useCallback(async () => {
@@ -123,31 +133,19 @@ export default function AdminAnalyticsPage() {
     }
   }, [adminPassword, range])
 
-  const deletePlay = useCallback(
-    async (playId: string) => {
-      if (!window.confirm('このプレイのログをすべて削除します。よろしいですか？')) return
-      setDeletingId(playId)
-      try {
-        const headers: Record<string, string> = {}
-        if (adminPassword) headers['x-zyakudan-admin-password'] = adminPassword
-        const res = await fetch(
-          `/api/admin/analytics?playId=${encodeURIComponent(playId)}`,
-          { method: 'DELETE', headers },
-        )
-        const json = (await res.json()) as { success?: boolean; message?: string }
-        if (!json.success) {
-          window.alert(json.message ?? '削除に失敗しました')
-          return
-        }
-        await load()
-      } catch (e) {
-        window.alert(e instanceof Error ? e.message : String(e))
-      } finally {
-        setDeletingId(null)
-      }
-    },
-    [adminPassword, load],
-  )
+  const hidePlay = useCallback((playId: string) => {
+    if (
+      !window.confirm(
+        'このプレイを一覧から非表示にします（Supabase のデータは残ります）。よろしいですか？',
+      )
+    ) {
+      return
+    }
+    setHidingId(playId)
+    hidePlayId(playId)
+    setHiddenRevision((n) => n + 1)
+    setHidingId(null)
+  }, [])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -159,6 +157,12 @@ export default function AdminAnalyticsPage() {
 
   const summary = payload?.summary
   const sources = payload?.sources ?? []
+  const hiddenPlayIds = useMemo(() => getHiddenPlayIds(), [hiddenRevision])
+  const visiblePlays = useMemo(
+    () => (payload?.plays ?? []).filter((play) => !hiddenPlayIds.has(play.playId)),
+    [payload?.plays, hiddenPlayIds],
+  )
+  const hiddenPlayCount = (payload?.plays ?? []).length - visiblePlays.length
 
   return (
     <div className="admin-analytics">
@@ -291,6 +295,11 @@ export default function AdminAnalyticsPage() {
 
           <section className="admin-card admin-card--compact">
             <h3 className="admin-card__title-sm">プレイ一覧</h3>
+            {hiddenPlayCount > 0 ? (
+              <p className="admin-field-hint">
+                非表示 {hiddenPlayCount} 件（このブラウザのみ。Supabase の生ログはそのまま）
+              </p>
+            ) : null}
             <div className="admin-analytics__table-wrap">
               <table className="admin-analytics__table admin-analytics__table--dense admin-analytics__table--plays">
                 <thead>
@@ -305,7 +314,7 @@ export default function AdminAnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(payload?.plays ?? []).map((play) => (
+                  {(visiblePlays).map((play) => (
                     <tr key={play.playId} title={play.sourceTitle ?? play.playId}>
                       <td className="admin-analytics__nowrap">{formatDt(play.lastAt)}</td>
                       <td>{play.sourceLabel ?? '—'}</td>
@@ -314,14 +323,15 @@ export default function AdminAnalyticsPage() {
                       <td>{play.finished ? '○' : `×${play.reachedQuestion}`}</td>
                       <td>
                         <span className="admin-analytics__choice-pills">
-                          {play.answers.map((a) => (
+                          {[...play.answers]
+                            .sort((a, b) => a.questionIndex - b.questionIndex)
+                            .map((a) => (
                             <span
                               key={`${play.playId}-${a.questionIndex}`}
                               className="admin-analytics__choice-pill"
-                              title={`${formatQuestionLabel(play.levelIndex, a.questionIndex)} → 選択${optionNum(a.optionIndex)}`}
+                              title={formatChoicePill(play.levelIndex, a)}
                             >
-                              {formatQuestionLabel(play.levelIndex, a.questionIndex)}:
-                              {optionNum(a.optionIndex)}
+                              {formatChoicePill(play.levelIndex, a)}
                             </span>
                           ))}
                         </span>
@@ -330,10 +340,10 @@ export default function AdminAnalyticsPage() {
                         <button
                           type="button"
                           className="admin-btn admin-btn--danger admin-btn--xs"
-                          disabled={deletingId === play.playId}
-                          onClick={() => void deletePlay(play.playId)}
+                          disabled={hidingId === play.playId}
+                          onClick={() => hidePlay(play.playId)}
                         >
-                          {deletingId === play.playId ? '…' : '削除'}
+                          {hidingId === play.playId ? '…' : '削除'}
                         </button>
                       </td>
                     </tr>
@@ -364,7 +374,7 @@ export default function AdminAnalyticsPage() {
                       <td>{q.avgScore ?? '—'}</td>
                       <td>
                         {q.topLowOption
-                          ? `${q.topLowOption.optionIndex + 1}(${q.topLowOption.count})`
+                          ? `${optionIndexToLetter(q.topLowOption.optionIndex)}(${q.topLowOption.count})`
                           : '—'}
                       </td>
                       <td>{q.abandonsHere}</td>

@@ -16,6 +16,7 @@ import {
   BACKGROUND_SCENES,
   inferBackgroundFromSituation,
 } from '../data/backgrounds'
+import { OPTION_SLOT_LABELS } from '../data/optionLetters'
 import { SCORE_VALUES, type ScoreValue } from '../data/scores'
 import type {
   BackgroundSceneId,
@@ -75,6 +76,7 @@ export default function AdminApp() {
   const [ranks, setRanks] = useState<ScoreRank[]>(() => cloneRanks(DEFAULT_RANKS))
   const [adminTab, setAdminTab] = useState<AdminTab>('edit')
   const [ready, setReady] = useState(false)
+  const [optionDragIndex, setOptionDragIndex] = useState<number | null>(null)
 
   const level = levels[levelIndex]
   const question = level?.questions[questionIndex]
@@ -147,6 +149,25 @@ export default function AdminApp() {
         const q = { ...next[levelIndex].questions[questionIndex] }
         const opts = [...q.options] as QuizOption[]
         opts[optIndex] = { ...opts[optIndex], ...patch }
+        q.options = opts as QuizQuestion['options']
+        const qs = [...next[levelIndex].questions]
+        qs[questionIndex] = q
+        next[levelIndex] = { ...next[levelIndex], questions: qs }
+        return next
+      })
+    },
+    [levelIndex, questionIndex],
+  )
+
+  const reorderOptions = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (fromIndex === toIndex) return
+      setLevels((prev) => {
+        const next = cloneLevels(prev)
+        const q = { ...next[levelIndex].questions[questionIndex] }
+        const opts = [...q.options] as QuizOption[]
+        const [item] = opts.splice(fromIndex, 1)
+        opts.splice(toIndex, 0, item)
         q.options = opts as QuizQuestion['options']
         const qs = [...next[levelIndex].questions]
         qs[questionIndex] = q
@@ -684,10 +705,43 @@ export default function AdminApp() {
               />
             </label>
 
-            <div className="admin-options-grid" role="group" aria-label="選択肢4つ">
+            <p className="admin-field-hint admin-options-grid__hint">
+              左から A〜D のスロット。見出しをドラッグして中身を入れ替え（プレイ時は表示順がシャッフルされます）
+            </p>
+            <div className="admin-options-grid" role="group" aria-label="選択肢 A〜D">
               {question.options.map((opt, i) => (
-                <div key={i} className="admin-option-col">
-                  <p className="admin-option-col__label">選択肢 {i + 1}</p>
+                <div
+                  key={`slot-${i}`}
+                  className={`admin-option-col${optionDragIndex === i ? ' admin-option-col--dragging' : ''}`}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    const from = Number(e.dataTransfer.getData('text/plain'))
+                    if (Number.isFinite(from)) reorderOptions(from, i)
+                    setOptionDragIndex(null)
+                  }}
+                >
+                  <div className="admin-option-col__head">
+                    <p className="admin-option-col__label">{OPTION_SLOT_LABELS[i]}</p>
+                    <span
+                      className="admin-option-col__drag"
+                      draggable
+                      title="ドラッグして並び替え"
+                      aria-label={`${OPTION_SLOT_LABELS[i]} をドラッグして並び替え`}
+                      onDragStart={(e) => {
+                        setOptionDragIndex(i)
+                        e.dataTransfer.effectAllowed = 'move'
+                        e.dataTransfer.setData('text/plain', String(i))
+                        e.stopPropagation()
+                      }}
+                      onDragEnd={() => setOptionDragIndex(null)}
+                    >
+                      ⠿
+                    </span>
+                  </div>
                   <label className="admin-field admin-field--full">
                     <span>台詞</span>
                     <p className="admin-field-hint">
