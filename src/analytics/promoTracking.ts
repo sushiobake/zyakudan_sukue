@@ -102,6 +102,20 @@ export const PROMO_CHANNELS: PromoChannelDef[] = [
     utm: { source: 'misskey', medium: 'sns' },
     inheritTemplatesFrom: 'x',
   },
+  {
+    id: 'p',
+    label: '集英社',
+    hint: 'r=p',
+    snsName: '集英社',
+    utm: { source: 'shueisha', medium: 'media' },
+    postTemplates: [
+      {
+        id: 'shueisha',
+        label: '掲載用',
+        body: '弱者男性を救え！\n“リアル”恋愛シミュレーション\n神視点で彼の恋愛を成就させる短編クイズ。\n\n{url}',
+      },
+    ],
+  },
 ]
 
 export const TRAFFIC_STORAGE_KEY = 'zyakudan.traffic.v1'

@@ -19,6 +19,7 @@ const PROMO_CHANNELS: PromoChannelDef[] = [
   { id: 'c', label: 'ci-en', snsName: 'ci-en' },
   { id: 'b', label: 'Bluesky', snsName: 'Bluesky' },
   { id: 'm', label: 'Misskey', snsName: 'Misskey' },
+  { id: 'p', label: '集英社', snsName: '集英社' },
 ]
 
 function getPromoChannelById(id: string): PromoChannelDef | undefined {
